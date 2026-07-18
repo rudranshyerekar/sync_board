@@ -13,11 +13,11 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ---
 
-## Current Phase: Phase 0 — Project Setup (Not Started)
+## Current Phase: Phase 0 — Project Setup (In Progress)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 0 — Project Setup | ⬜ Not Started | Skeleton project, folder structure, DB setup |
+| Phase 0 — Project Setup | 🔨 In Progress | Skeleton project, folder structure, DB setup |
 | Phase 1 — Backend CRUD + Auth | ⬜ Not Started | Entities, REST APIs, JWT auth, authorization |
 | Phase 2 — Frontend CRUD + DnD | ⬜ Not Started | React UI, Axios, drag-and-drop, route guards |
 | Phase 3 — WebSocket Card Sync | ⬜ Not Started | STOMP integration, live card moves |
@@ -38,7 +38,7 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 - **Real-Time:** Spring WebSocket + STOMP broker
 - **ORM:** Spring Data JPA
 - **Database:** MySQL (local installation, NOT Docker)
-- **Build Tool:** TBD (Maven or Gradle — decide in Phase 0)
+- **Build Tool:** Maven (pom.xml)
 
 ### Frontend
 - **Framework:** React
@@ -74,9 +74,9 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 - [x] Activity feed, members list, settings page mockups
 
 ### Source Code
-- [ ] Backend project (Spring Boot) — NOT CREATED YET
-- [ ] Frontend project (React) — NOT CREATED YET
-- [ ] Database schema — NOT CREATED YET
+- [x] Backend project (Spring Boot) — Initialized (Maven)
+- [x] Frontend project (React) — Initialized (Vite)
+- [x] Database schema — MySQL database created
 
 ---
 
@@ -97,13 +97,18 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 | # | Issue | Status | Notes |
 |---|-------|--------|-------|
-| — | None yet | — | Project hasn't started implementation |
+| — | Folder structure scaffolding | Open | Backend and frontend feature folders need to be generated next session |
 
 ---
 
 ## Recent Changes (Reverse Chronological)
 
 ### 2026-07-18
+- Initialized Spring Boot backend project (`syncboard-backend`) with Maven
+- Initialized React frontend project (`syncboard-frontend`) with Vite
+- Created `syncboard` local MySQL database
+- Changed configuration files preference from `.yml` to `.properties`
+- Reorganized folder structure — moved all documentation into `docs/` directory
 - Created PROGRESS.md (this file)
 - Created Design.md, .gitignore, .env.example, DATABASE.md
 - Updated all project documents (README.md, SyncBoard-PRD.md, Architecture.md, Phases.md) to replace PostgreSQL with local MySQL
@@ -119,17 +124,17 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ```
 sync_board/
-├── README.md                 — Project overview
-├── SyncBoard-PRD.md          — Full product requirements (THE reference doc)
-├── Architecture.md           — System design, folder structures, data flows
-├── Phases.md                 — Phase-by-phase development checklist
-├── Rules.md                  — Engineering rules & conventions
-├── PROGRESS.md               — THIS FILE (status tracker & AI context)
-├── Design.md                 — UI/UX design system
-├── DATABASE.md               — MySQL setup & schema reference
+├── README.md                 — Project overview (stays at root for GitHub visibility)
 ├── .gitignore                — Git ignore rules
 ├── .env.example              — Environment variable template
 └── docs/
+    ├── PROGRESS.md           — THIS FILE (status tracker & AI context)
+    ├── SyncBoard-PRD.md      — Full product requirements (THE reference doc)
+    ├── Architecture.md       — System design, folder structures, data flows
+    ├── Phases.md             — Phase-by-phase development checklist
+    ├── Rules.md              — Engineering rules & conventions
+    ├── Design.md             — UI/UX design system
+    ├── DATABASE.md           — MySQL setup & schema reference
     ├── images/               — UI reference screenshots
     └── materials/            — Reference PDFs and analysis
 ```
@@ -140,13 +145,13 @@ sync_board/
 
 When starting a new chat session about this project, read files in this order:
 
-1. **PROGRESS.md** (this file) — current status, what exists, recent changes
-2. **Phases.md** — what phase we're in, what tasks remain
-3. **Architecture.md** — how the system is structured (read the relevant sections)
-4. **Rules.md** — engineering conventions to follow
-5. **SyncBoard-PRD.md** — detailed specs (reference as needed, don't need to read all 600 lines upfront)
-6. **Design.md** — UI/UX decisions (read when working on frontend)
-7. **DATABASE.md** — schema details (read when working on backend/DB)
+1. **docs/PROGRESS.md** (this file) — current status, what exists, recent changes
+2. **docs/Phases.md** — what phase we're in, what tasks remain
+3. **docs/Architecture.md** — how the system is structured (read the relevant sections)
+4. **docs/Rules.md** — engineering conventions to follow
+5. **docs/SyncBoard-PRD.md** — detailed specs (reference as needed, don't need to read all 600 lines upfront)
+6. **docs/Design.md** — UI/UX decisions (read when working on frontend)
+7. **docs/DATABASE.md** — schema details (read when working on backend/DB)
 
 ---
 
