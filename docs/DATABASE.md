@@ -75,14 +75,9 @@ mysql -u root -p -e "SHOW DATABASES;" | grep syncboard
 
 - MySQL's default is `REPEATABLE_READ` (PostgreSQL defaults to `READ_COMMITTED`).
 - For this project, the default `REPEATABLE_READ` is fine — it provides stronger guarantees and works well with optimistic locking.
-- If phantom reads become an issue, explicitly set isolation in `application.yml`:
-  ```yaml
-  spring:
-    jpa:
-      properties:
-        hibernate:
-          connection:
-            isolation: 2  # READ_COMMITTED (if needed)
+- If phantom reads become an issue, explicitly set isolation in `application.properties`:
+  ```properties
+  spring.jpa.properties.hibernate.connection.isolation=2
   ```
 
 ### 2.4 String Columns
@@ -113,23 +108,18 @@ mysql -u root -p -e "SHOW DATABASES;" | grep syncboard
 
 ## 3. Spring Boot Database Configuration
 
-### 3.1 application-local.yml
+### 3.1 application-local.properties
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/syncboard?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8mb4
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:your_password}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/syncboard?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8mb4
+spring.datasource.username=${MYSQL_USER:root}
+spring.datasource.password=${MYSQL_PASSWORD:your_password}
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
 ```
 
 ### 3.2 Maven Dependency
@@ -231,12 +221,10 @@ Cards, Columns, and Boards all have a `position` field for ordering. Use a **fra
 ### 6.3 Test Database
 
 - For integration tests, consider using **H2 in MySQL compatibility mode** or **Testcontainers with MySQL**:
-  ```yaml
-  # application-test.yml (H2 option)
-  spring:
-    datasource:
-      url: jdbc:h2:mem:testdb;MODE=MYSQL
-      driver-class-name: org.h2.Driver
+  ```properties
+  # application-test.properties (H2 option)
+  spring.datasource.url=jdbc:h2:mem:testdb;MODE=MYSQL
+  spring.datasource.driver-class-name=org.h2.Driver
   ```
 
 ---

@@ -43,6 +43,11 @@ pnpm-debug.log*
 *.env
 !.env.example
 
+# Local Spring Boot Properties (containing secrets)
+application-dev.properties
+application-local.properties
+application-secret.properties
+
 # -------------------- IDE --------------------
 
 # IntelliJ IDEA

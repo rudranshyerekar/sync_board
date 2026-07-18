@@ -162,9 +162,9 @@ syncboard-backend/
 │       └── util/ (position-recalculation helper, mapper utilities)
 │
 ├── src/main/resources/
-│   ├── application.yml
-│   ├── application-local.yml
-│   └── application-prod.yml
+│   ├── application.properties
+│   ├── application-local.properties
+│   └── application-prod.properties
 │
 ├── src/test/java/com/syncboard/            (mirrors main structure, per module)
 │
@@ -284,8 +284,8 @@ Applies to card moves, comments, typing indicators, presence, and editing indica
 
 ## 8. Configuration & Environment Structure
 
-- **`application-local.yml`** — local MySQL database URL, permissive CORS for local frontend dev server, verbose logging.
-- **`application-prod.yml`** — production database URL (via environment variable, never hardcoded), strict CORS limited to the deployed frontend origin, JWT secret sourced from environment/secret manager, reduced logging verbosity.
+- **`application-local.properties`** — local MySQL database URL, permissive CORS for local frontend dev server, verbose logging.
+- **`application-prod.properties`** — production database URL (via environment variable, never hardcoded), strict CORS limited to the deployed frontend origin, JWT secret sourced from environment/secret manager, reduced logging verbosity.
 - **Frontend environment config** — API base URL and WebSocket URL should be environment-driven, not hardcoded, so the same build can point at local vs. deployed backends.
 - **Secrets** (JWT signing secret, database credentials) never committed to source control — sourced from environment variables or a secrets manager, with only placeholder/example values in any checked-in config template.
 
