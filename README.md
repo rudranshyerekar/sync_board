@@ -43,12 +43,12 @@ notifications, and collaborate seamlessly without refreshing the page.
 -   Spring WebSocket (STOMP)
 -   JWT Authentication
 -   Spring Data JPA
--   PostgreSQL
+-   MySQL (Local)
 
 ### DevOps
 
--   Docker
--   Docker Compose
+-   Docker & Docker Compose (for backend/frontend containerization)
+-   Local MySQL Server
 
 ## 🎯 Project Goal
 

@@ -23,13 +23,13 @@
 
 ## 1. Architectural Overview
 
-SyncBoard is a **modular monolith**: one Spring Boot process, one React SPA, one PostgreSQL instance. Modularity is achieved by strict package boundaries inside the monolith, not by splitting into network services.
+SyncBoard is a **modular monolith**: one Spring Boot process, one React SPA, one MySQL instance. Modularity is achieved by strict package boundaries inside the monolith, not by splitting into network services.
 
 Think of the system as three concentric layers:
 
 - **Edge layer** — what the client actually talks to: REST controllers and the STOMP WebSocket endpoint.
 - **Domain layer** — services that hold business rules (concurrency checks, permission checks, notification generation).
-- **Persistence layer** — repositories and entities backed by PostgreSQL.
+- **Persistence layer** — repositories and entities backed by MySQL.
 
 A request enters through the edge layer, is authorized and processed in the domain layer, is persisted, and — for anything real-time — triggers a broadcast back out through the edge layer to every relevant subscriber, including the original caller.
 
@@ -284,7 +284,7 @@ Applies to card moves, comments, typing indicators, presence, and editing indica
 
 ## 8. Configuration & Environment Structure
 
-- **`application-local.yml`** — local Docker Compose database URL, permissive CORS for local frontend dev server, verbose logging.
+- **`application-local.yml`** — local MySQL database URL, permissive CORS for local frontend dev server, verbose logging.
 - **`application-prod.yml`** — production database URL (via environment variable, never hardcoded), strict CORS limited to the deployed frontend origin, JWT secret sourced from environment/secret manager, reduced logging verbosity.
 - **Frontend environment config** — API base URL and WebSocket URL should be environment-driven, not hardcoded, so the same build can point at local vs. deployed backends.
 - **Secrets** (JWT signing secret, database credentials) never committed to source control — sourced from environment variables or a secrets manager, with only placeholder/example values in any checked-in config template.
@@ -304,7 +304,7 @@ Applies to card moves, comments, typing indicators, presence, and editing indica
 | Security | Spring Security + JWT | Stateless REST auth, authenticated WebSocket handshake |
 | Real-time server | Spring WebSocket + STOMP broker | |
 | ORM | Spring Data JPA | |
-| Database | PostgreSQL | |
+| Database | MySQL (Local) | |
 | Containerization | Docker + Docker Compose | |
 | API documentation (optional) | springdoc-openapi | Auto-generates interactive API docs from controllers |
 
@@ -312,11 +312,12 @@ Applies to card moves, comments, typing indicators, presence, and editing indica
 
 ## 10. Infrastructure & Docker Layout
 
-A `docker-compose.yml` at the repository root should define three services conceptually:
+A `docker-compose.yml` at the repository root can optionally define two services for containerized deployment:
 
-- **`db`** — PostgreSQL, with a named volume so data survives container restarts, exposing its port only to the other containers (not necessarily to the host, once the backend is containerized too).
-- **`backend`** — builds from the backend's Dockerfile, depends on `db` being healthy before starting, reads its database URL and JWT secret from environment variables defined in the compose file (or an `.env` file it references).
+- **`backend`** — builds from the backend's Dockerfile, connects to the host machine's local MySQL instance (via `host.docker.internal` or the host's network IP), reads its database URL and JWT secret from environment variables defined in the compose file (or an `.env` file it references).
 - **`frontend`** — either served as static build output through a lightweight web server, or run via its dev server during local development, pointed at the backend's exposed port.
+
+Note: MySQL runs locally on the host as a native service, not inside a Docker container. For local development, running both the backend (`mvn spring-boot:run`) and frontend (`npm run dev`) directly is typically simpler than using Docker Compose.
 
 Keep the Dockerfiles minimal and single-purpose — one for the backend, one for the frontend — rather than trying to build a single combined image, so each layer can be rebuilt independently as you iterate.
 
