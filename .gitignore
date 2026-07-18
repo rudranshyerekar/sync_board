@@ -1,0 +1,93 @@
+# ============================================
+# SyncBoard — .gitignore
+# ============================================
+
+# -------------------- Java / Spring Boot --------------------
+
+# Maven
+syncboard-backend/target/
+*.jar
+*.war
+*.class
+
+# Gradle
+syncboard-backend/.gradle/
+syncboard-backend/build/
+!syncboard-backend/gradle/wrapper/gradle-wrapper.jar
+
+# Spring Boot
+*.log
+spring-shell.log
+
+# -------------------- Node.js / React --------------------
+
+syncboard-frontend/node_modules/
+syncboard-frontend/dist/
+syncboard-frontend/build/
+syncboard-frontend/.cache/
+syncboard-frontend/.parcel-cache/
+
+# npm / yarn / pnpm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# -------------------- Environment & Secrets --------------------
+
+.env
+.env.local
+.env.development
+.env.production
+*.env
+!.env.example
+
+# -------------------- IDE --------------------
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# -------------------- OS --------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+# -------------------- Docker --------------------
+
+# Don't ignore Dockerfiles or docker-compose, but ignore build context artifacts
+docker-compose.override.yml
+
+# -------------------- Misc --------------------
+
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
