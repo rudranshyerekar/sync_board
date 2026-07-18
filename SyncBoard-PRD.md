@@ -155,7 +155,7 @@ Opens the deployed app, creates two browser sessions, and evaluates whether the 
 
 ### 6.1 Architectural Style
 
-SyncBoard is a **modular monolith**: one Spring Boot backend, one React frontend, one PostgreSQL database. Modularity is enforced through package/module boundaries inside the monolith (e.g., `auth`, `workspace`, `board`, `presence`, `notification`, `activity`), not through network boundaries between services. This gives you clean separation of concerns without the operational overhead of distributed systems — which is the correct trade-off for a single-developer or small-team project.
+SyncBoard is a **modular monolith**: one Spring Boot backend, one React frontend, one MySQL database. Modularity is enforced through package/module boundaries inside the monolith (e.g., `auth`, `workspace`, `board`, `presence`, `notification`, `activity`), not through network boundaries between services. This gives you clean separation of concerns without the operational overhead of distributed systems — which is the correct trade-off for a single-developer or small-team project.
 
 ### 6.2 High-Level Component Map
 
@@ -165,7 +165,7 @@ Describe the system as five cooperating layers:
 2. **API Gateway Layer (Spring Boot Controllers)** — exposes REST endpoints for CRUD-style operations (create board, fetch cards, etc.) and a STOMP endpoint for real-time messaging. This layer authenticates every request via JWT.
 3. **Real-Time Messaging Layer (Spring WebSocket + STOMP broker)** — routes events between clients using topic-based publish/subscribe. This is the heart of the "live" experience.
 4. **Domain/Service Layer** — contains business logic: what happens when a card moves, who should be notified, how presence timeouts are computed, how optimistic concurrency conflicts are detected.
-5. **Persistence Layer (Spring Data JPA + PostgreSQL)** — the source of truth. Every real-time event that represents a durable state change is persisted here; ephemeral events (typing indicators, "currently viewing") are not persisted, only broadcast.
+5. **Persistence Layer (Spring Data JPA + MySQL)** — the source of truth. Every real-time event that represents a durable state change is persisted here; ephemeral events (typing indicators, "currently viewing") are not persisted, only broadcast.
 
 ### 6.3 The Two Data Paths
 
@@ -207,8 +207,8 @@ Each logged-in client opens exactly **one** WebSocket connection (via SockJS for
 | Security | Spring Security + JWT | Stateless auth fits a horizontally-simple, single-instance deployment; no server-side session store needed for REST |
 | Real-time server | Spring WebSocket + STOMP broker | First-class Spring integration; topic subscriptions map cleanly to board/workspace/user scopes |
 | ORM | Spring Data JPA | Reduces boilerplate for a fairly standard relational schema |
-| Database | PostgreSQL | Strong relational integrity for the workspace → board → column → card hierarchy; mature, well-documented |
-| Containerization | Docker + Docker Compose | One-command local environment (DB + backend + frontend) |
+| Database | MySQL (Local) | Strong relational integrity for the workspace → board → column → card hierarchy; runs as a local service without containerization overhead |
+| Containerization | Docker + Docker Compose | Local environment for backend and frontend services (database runs natively on the host) |
 | Optional (v2) | Redis | Only needed if you outgrow in-memory presence tracking or want pub/sub across multiple backend instances — not needed for v1's single-instance design |
 | Optional (v2) | Nginx | Reverse proxy / static file serving once you deploy beyond local Docker Compose |
 
@@ -571,7 +571,7 @@ A phased build order, sequenced so that each phase produces something demonstrab
 
 ## 20. Deployment & Infrastructure
 
-- **Local development:** Docker Compose spinning up PostgreSQL, the Spring Boot backend, and the React frontend (or the frontend run via its own dev server with a proxy to the backend) as one command.
+- **Local development:** MySQL runs natively on the host machine as a local service. The Spring Boot backend and React frontend can be run locally via their respective dev commands (`mvn spring-boot:run` and `npm run dev`), or optionally containerized via Docker Compose (without a database container, since MySQL runs on the host). The frontend dev server proxies API requests to the backend.
 - **Environment configuration:** separate configuration profiles for local vs. a deployed environment (database URL, JWT secret, allowed CORS origins) rather than hardcoding values.
 - **Deployment target:** any single-instance host is sufficient (a small VM, a container platform, or a PaaS with WebSocket support) — the architecture explicitly does not require multi-instance scaling for v1, so avoid over-engineering the deployment to match a scale you're not targeting.
 - **Reverse proxy (optional, v2):** Nginx in front of both the API and the WebSocket endpoint if you deploy beyond simple Docker Compose, mainly for TLS termination and clean routing.

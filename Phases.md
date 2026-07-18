@@ -19,9 +19,9 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** A clean, running skeleton before any feature work begins.
 
 **Tasks:**
-- [ ] Initialize the backend project (Spring Boot, with Web, Security, WebSocket, Data JPA, and PostgreSQL driver dependencies).
+- [ ] Initialize the backend project (Spring Boot, with Web, Security, WebSocket, Data JPA, and MySQL driver dependencies).
 - [ ] Initialize the frontend project (React, React Router, Tailwind CSS configured).
-- [ ] Set up the local PostgreSQL instance via Docker Compose.
+- [ ] Set up the local MySQL instance (ensure the MySQL server is running, create the `syncboard` database with `utf8mb4` charset).
 - [ ] Verify the backend can connect to the database and the frontend dev server can reach the backend (a simple health-check endpoint is enough).
 - [ ] Establish the folder structure from Architecture.md for both projects, even with empty placeholder files.
 - [ ] Set up environment/config files for local development (see Architecture.md §8).
@@ -148,7 +148,7 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** A polished, shippable, explainable project.
 
 **Tasks:**
-- [ ] Write Dockerfiles for backend and frontend, and a `docker-compose.yml` tying together `db`, `backend`, `frontend`.
+- [ ] Write Dockerfiles for backend and frontend, and optionally a `docker-compose.yml` for containerized deployment (the MySQL database runs locally on the host, not in Docker).
 - [ ] Verify the entire stack starts from a single `docker compose up` on a clean machine/environment.
 - [ ] Write backend unit tests for the highest-risk logic: optimistic concurrency checks, position recalculation, permission checks.
 - [ ] Write at least a handful of WebSocket/STOMP integration tests simulating two connected clients.
