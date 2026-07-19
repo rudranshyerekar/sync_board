@@ -13,11 +13,11 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ---
 
-## Current Phase: Phase 0 — Project Setup (In Progress)
+## Current Phase: Phase 1 — Backend CRUD + Auth (Not Started)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
-| Phase 0 — Project Setup | 🔨 In Progress | Skeleton project, folder structure, DB setup |
+| Phase 0 — Project Setup | ✅ Complete | Skeleton project, folder structure, DB setup |
 | Phase 1 — Backend CRUD + Auth | ⬜ Not Started | Entities, REST APIs, JWT auth, authorization |
 | Phase 2 — Frontend CRUD + DnD | ⬜ Not Started | React UI, Axios, drag-and-drop, route guards |
 | Phase 3 — WebSocket Card Sync | ⬜ Not Started | STOMP integration, live card moves |
@@ -97,7 +97,7 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 | # | Issue | Status | Notes |
 |---|-------|--------|-------|
-| — | Folder structure scaffolding | Open | Backend and frontend feature folders need to be generated next session |
+| — | None yet | — | Phase 0 completed. Ready to start Phase 1. |
 
 ---
 
