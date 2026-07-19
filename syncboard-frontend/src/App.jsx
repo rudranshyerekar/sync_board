@@ -1,121 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react'
+import httpClient from './api/httpClient'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [health, setHealth] = useState({ status: 'LOADING...', error: null })
+
+  useEffect(() => {
+    httpClient.get('/health')
+      .then(response => {
+        setHealth({ status: response.data.status || 'OK', error: null })
+      })
+      .catch(err => {
+        console.error('Health check failed:', err)
+        setHealth({ 
+          status: 'ERROR', 
+          error: err.message || 'Could not connect to backend' 
+        })
+      })
+  }, [])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+    <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full bg-bg-secondary p-8 rounded-xl shadow-lg border border-border">
+        <h1 className="text-3xl font-bold text-primary mb-6 text-center">SyncBoard</h1>
+        
+        <div className="space-y-4">
+          <p className="text-text-secondary text-center">
+            Frontend is running successfully.
           </p>
+          
+          <div className={`p-4 rounded-md border ${
+            health.status === 'LOADING...' ? 'bg-bg-tertiary border-border' :
+            health.status === 'ERROR' ? 'bg-red-50 border-danger text-danger' :
+            'bg-green-50 border-success text-success'
+          }`}>
+            <h2 className="font-semibold mb-2">Backend Connection Status:</h2>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${
+                health.status === 'LOADING...' ? 'bg-warning animate-pulse' :
+                health.status === 'ERROR' ? 'bg-danger' :
+                'bg-success'
+              }`}></div>
+              <span className="font-mono text-sm">{health.status}</span>
+            </div>
+            {health.error && (
+              <p className="mt-2 text-xs opacity-80">{health.error}</p>
+            )}
+          </div>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      </div>
+    </div>
   )
 }
 
