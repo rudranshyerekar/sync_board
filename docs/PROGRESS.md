@@ -19,9 +19,9 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 |-------|--------|-------------|
 | Phase 0 — Project Setup | ✅ Complete | Skeleton project, folder structure, DB setup |
 | Phase 1 — Backend CRUD + Auth | ✅ Complete | Entities, REST APIs, JWT auth, authorization |
-| Phase 2 — Frontend CRUD + DnD | ⬜ Not Started | React UI, Axios, drag-and-drop, route guards |
-| Phase 3 — WebSocket Card Sync | ⬜ Not Started | STOMP integration, live card moves |
-| Phase 4 — Presence + Editing | ⬜ Not Started | Heartbeat, online/offline, soft-lock indicators |
+| Phase 2 — Frontend CRUD + DnD | ✅ Complete | React UI, Axios, drag-and-drop, route guards (Mock Data used initially) |
+| Phase 3 — WebSocket Card Sync | 🚧 In Progress (Frontend done) | STOMP integration, live card moves |
+| Phase 4 — Presence + Editing | 🚧 In Progress (Frontend done) | Heartbeat, online/offline, soft-lock indicators |
 | Phase 5 — Comments + Notifications | ⬜ Not Started | Live comments, typing indicators, notifications |
 | Phase 6 — Activity + Hardening | ⬜ Not Started | Activity feed, permission audit, concurrency polish |
 | Phase 7 — Docker + Tests + Deploy | ⬜ Not Started | Dockerfiles, testing, deployment, final docs |
@@ -102,6 +102,15 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 ---
 
 ## Recent Changes (Reverse Chronological)
+
+### 2026-07-20
+- Built full React frontend Kanban UI using `react-dnd` and Tailwind CSS matching the visual mockup.
+- Created `MockDataService` and Zustand store (`useBoardStore`) for optimistic updates and state management.
+- Implemented `BoardView`, `Column`, `CardPreview`, and `CardDrawer` components.
+- Phase 2 (Frontend UI) is complete using mock data. Ready for backend integration.
+- Built Frontend Real-time infrastructure (`MockWebSocketService`) to simulate STOMP broker (Phase 3).
+- Implemented live Presence UI in header (Online/Idle dots) and "Currently Editing" soft-lock indicators on cards (Phase 4).
+- Extracted global shell into `MainLayout.jsx` and built responsive, fully-styled `DashboardView` and `CreateBoardView` matching the complex UI mockups.
 
 ### 2026-07-18
 - Initialized Spring Boot backend project (`syncboard-backend`) with Maven
