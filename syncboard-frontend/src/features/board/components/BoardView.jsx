@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Search, Bell, Settings, LayoutDashboard, Filter, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Search, Bell, Settings, LayoutDashboard, Filter, MoreHorizontal, UserPlus, Star } from 'lucide-react';
 import { useBoardStore } from '../state/useBoardStore';
 import { Column } from './Column';
 import { Button } from '../../../components/Button';
@@ -11,7 +11,7 @@ import { CardDrawer } from '../../cardDetail/components/CardDrawer';
 
 const BoardView = () => {
   const { boardId } = useParams();
-  const { board, isLoading, fetchBoard, initRealTimeSync, disconnectRealTimeSync, activeUsers } = useBoardStore();
+  const { board, isLoading, fetchBoard, initRealTimeSync, disconnectRealTimeSync, activeUsers, createColumn } = useBoardStore();
 
   useEffect(() => {
     if (boardId) {
@@ -37,6 +37,7 @@ const BoardView = () => {
               <span className="text-gray-500">Boards</span>
               <span className="text-gray-400">/</span>
               <span className="font-semibold text-gray-900">{board.title}</span>
+              <Star className="w-4 h-4 text-gray-400 ml-1 cursor-pointer hover:text-yellow-400" />
             </div>
             
             <div className="flex items-center gap-4">
@@ -66,6 +67,7 @@ const BoardView = () => {
                   <LayoutDashboard className="w-3.5 h-3.5" />
                 </div>
                 {board.title}
+                <Star className="w-5 h-5 text-gray-400 ml-1 cursor-pointer hover:text-yellow-400" />
               </h2>
               
               <div className="h-6 w-px bg-gray-300 mx-2"></div>
@@ -103,10 +105,39 @@ const BoardView = () => {
               {board.columns.map(column => (
                 <Column key={column.id} column={column} />
               ))}
+              <button 
+                onClick={() => {
+                  const title = prompt("Enter new column title:");
+                  if (title && title.trim() !== "") {
+                    createColumn(board.id, title.trim());
+                  }
+                }}
+                className="w-80 flex-shrink-0 bg-gray-200/50 hover:bg-gray-200 text-gray-700 font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-dashed border-gray-300 h-[60px]"
+              >
+                + Add Column
+              </button>
             </div>
           </main>
         {/* Detail Drawer (renders conditionally internally based on state) */}
         <CardDrawer />
+        
+        {/* Bottom Status Bar */}
+        <footer className="h-12 bg-white border-t border-border flex items-center justify-between px-6 text-xs text-gray-500 font-medium flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span>All changes saved</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>Connected <span className="text-gray-400 px-1">•</span> 42ms</span>
+            </div>
+            <div className="flex items-center gap-2 text-primary font-semibold">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>Live updates On</span>
+            </div>
+          </div>
+        </footer>
       </div>
     </DndProvider>
   );

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { mockApi } from '../../../api/mockDataService';
+import { boardApi } from '../../../api/boardApi';
+import { cardApi } from '../../../api/cardApi';
 import { wsService } from '../../../api/websocketService';
 
 export const useBoardStore = create((set, get) => ({
@@ -15,10 +16,62 @@ export const useBoardStore = create((set, get) => ({
   fetchBoard: async (boardId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await mockApi.fetchBoard(boardId);
-      set({ board: data, isLoading: false });
+      // 1. Fetch Board
+      const boardData = await boardApi.getBoard(boardId);
+      
+      // 2. Fetch Columns
+      const columnsData = await boardApi.getColumns(boardId);
+      
+      // 3. Fetch Cards for each column
+      const columnsWithCards = await Promise.all(
+        columnsData.map(async (col) => {
+          const cardsData = await cardApi.getCards(col.id);
+          return { ...col, cards: cardsData };
+        })
+      );
+      
+      // Compose full board object
+      const fullBoard = {
+        ...boardData,
+        columns: columnsWithCards
+      };
+
+      set({ board: fullBoard, isLoading: false });
     } catch (err) {
-      set({ error: err.message, isLoading: false });
+      set({ error: err.response?.data?.message || err.message, isLoading: false });
+    }
+  },
+
+  createColumn: async (boardId, title) => {
+    try {
+      await boardApi.createColumn(boardId, { title });
+      get().fetchBoard(boardId);
+    } catch (err) {
+      console.error("Failed to create column:", err);
+    }
+  },
+
+  createCard: async (columnId, title) => {
+    try {
+      await cardApi.createCard(columnId, { title });
+      const boardId = get().board?.id;
+      if (boardId) {
+        get().fetchBoard(boardId);
+      }
+    } catch (err) {
+      console.error("Failed to create card:", err);
+    }
+  },
+
+  updateCard: async (cardId, cardData) => {
+    try {
+      await cardApi.updateCard(cardId, cardData);
+      const boardId = get().board?.id;
+      if (boardId) {
+        get().fetchBoard(boardId);
+      }
+    } catch (err) {
+      console.error("Failed to update card:", err);
     }
   },
 
@@ -102,15 +155,32 @@ export const useBoardStore = create((set, get) => ({
     });
   },
 
-  // Sync with backend (mock) after optimistic update
-  syncMoveCard: async (cardId, sourceColId, targetColId, newPosition) => {
+  // Sync with backend after optimistic update
+  syncMoveCard: async (cardId, sourceColId, targetColId, newIndex) => {
     try {
-      await mockApi.moveCard(cardId, sourceColId, targetColId, newPosition);
-      // If it fails, we would roll back the optimistic update here.
+      const state = get();
+      const targetCol = state.board.columns.find(c => c.id === targetColId);
+      
+      let newPosition = 1000.0;
+      const cards = targetCol.cards;
+      
+      if (cards.length > 1) {
+        if (newIndex === 0) {
+           newPosition = cards[1].position / 2.0;
+        } else if (newIndex === cards.length - 1) {
+           newPosition = cards[cards.length - 2].position + 1000.0;
+        } else {
+           newPosition = (cards[newIndex - 1].position + cards[newIndex + 1].position) / 2.0;
+        }
+      }
+
+      await cardApi.moveCard(cardId, targetColId, newPosition);
+      // Optional: re-fetch to ensure sync
+      // get().fetchBoard(get().board.id);
     } catch (err) {
       console.error("Failed to sync card move:", err);
       // Trigger a re-fetch to repair state on failure
-      get().fetchBoard(get().board.id);
+      get().fetchBoard(get().board?.id);
     }
   }
 }));

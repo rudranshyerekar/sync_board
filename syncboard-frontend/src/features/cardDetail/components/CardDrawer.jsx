@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { X, AlignLeft, User, Tag, Clock } from 'lucide-react';
 import { useBoardStore } from '../../board/state/useBoardStore';
 import { Avatar } from '../../../components/Avatar';
@@ -6,7 +6,7 @@ import { Badge } from '../../../components/Badge';
 import { Button } from '../../../components/Button';
 
 export const CardDrawer = () => {
-  const { board, selectedCardId, setSelectedCard, publishEditStart, publishEditStop } = useBoardStore();
+  const { board, selectedCardId, setSelectedCard, publishEditStart, publishEditStop, updateCard } = useBoardStore();
 
   // Find the selected card across all columns
   const card = useMemo(() => {
@@ -19,6 +19,16 @@ export const CardDrawer = () => {
   }, [board, selectedCardId]);
 
   const cardId = card?.id;
+  
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedDesc, setEditedDesc] = useState("");
+
+  useEffect(() => {
+    if (card) {
+      setEditedTitle(card.title || "");
+      setEditedDesc(card.description || "");
+    }
+  }, [card]);
 
   useEffect(() => {
     if (cardId) {
@@ -30,6 +40,15 @@ export const CardDrawer = () => {
   }, [cardId, publishEditStart, publishEditStop]);
 
   if (!card) return null;
+
+  const handleSave = () => {
+    updateCard(card.id, {
+      ...card,
+      title: editedTitle,
+      description: editedDesc
+    });
+    setSelectedCard(null);
+  };
 
   return (
     <>
@@ -50,9 +69,11 @@ export const CardDrawer = () => {
                 {card.columnTitle}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">
-              {card.title}
-            </h2>
+            <input 
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="text-xl font-bold text-gray-900 leading-tight bg-transparent border-b border-transparent focus:border-gray-300 focus:outline-none w-full pb-1"
+            />
           </div>
           <button 
             onClick={() => setSelectedCard(null)}
@@ -122,9 +143,12 @@ export const CardDrawer = () => {
             <div className="flex items-center gap-2 text-sm text-gray-500 font-medium mb-3">
               <AlignLeft className="w-4 h-4" /> Description
             </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 min-h-[100px] text-sm text-gray-700">
-              {card.description || <span className="text-gray-400 italic">Add a more detailed description...</span>}
-            </div>
+            <textarea
+              value={editedDesc}
+              onChange={(e) => setEditedDesc(e.target.value)}
+              className="bg-gray-50 border border-gray-200 rounded-md p-4 min-h-[100px] text-sm text-gray-700 w-full focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none"
+              placeholder="Add a more detailed description..."
+            />
           </div>
           
         </div>
@@ -132,7 +156,7 @@ export const CardDrawer = () => {
         {/* Footer */}
         <div className="p-4 border-t border-border bg-gray-50 flex justify-end gap-3">
           <Button variant="ghost" onClick={() => setSelectedCard(null)}>Cancel</Button>
-          <Button variant="primary">Save Changes</Button>
+          <Button variant="primary" onClick={handleSave}>Save Changes</Button>
         </div>
       </div>
     </>

@@ -1,10 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Bell, Check, Lock, Users, Code, Megaphone, Rocket, PenTool, Calendar } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Bell, Check, Lock, Users, Code, Megaphone, Rocket, PenTool, Calendar, Plus, MoreHorizontal, Edit3 } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Avatar } from '../../../components/Avatar';
+import { workspaceApi } from '../../../api/workspaceApi';
+import { boardApi } from '../../../api/boardApi';
 
 const CreateBoardView = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
       
@@ -60,6 +63,7 @@ const CreateBoardView = () => {
                   </label>
                   <div className="relative">
                     <input 
+                      id="boardName"
                       type="text" 
                       defaultValue="Product Launch Plan"
                       className="w-full border-2 border-primary rounded-md px-4 py-2.5 text-gray-900 focus:outline-none shadow-sm"
@@ -131,15 +135,66 @@ const CreateBoardView = () => {
                 </div>
               </section>
 
+              <section>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Board Columns</h2>
+                    <p className="text-sm text-gray-500 mt-1">Choose a template or customize your columns.</p>
+                  </div>
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary border border-primary/30 bg-primary/5 rounded-md hover:bg-primary/10 transition-colors">
+                    <Edit3 className="w-4 h-4" /> Customize Columns
+                  </button>
+                </div>
+                
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-gray-50 border border-gray-200 p-4 flex flex-col justify-between border-t-4 border-t-gray-400 shadow-sm relative">
+                    <span className="font-semibold text-gray-900 text-[15px]">To Do</span>
+                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
+                  </div>
+                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#fffdf0] border border-yellow-100 p-4 flex flex-col justify-between border-t-4 border-t-yellow-400 shadow-sm relative">
+                    <span className="font-semibold text-gray-900 text-[15px]">In Progress</span>
+                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
+                  </div>
+                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#f4f7ff] border border-blue-100 p-4 flex flex-col justify-between border-t-4 border-t-blue-500 shadow-sm relative">
+                    <span className="font-semibold text-gray-900 text-[15px]">Review</span>
+                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
+                  </div>
+                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#f3fbf5] border border-green-100 p-4 flex flex-col justify-between border-t-4 border-t-green-500 shadow-sm relative">
+                    <span className="font-semibold text-gray-900 text-[15px]">Done</span>
+                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
+                  </div>
+                  <button className="w-36 flex-shrink-0 h-28 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> Add Column</span>
+                  </button>
+                </div>
+              </section>
+
               <div className="pt-6 border-t border-gray-200 flex items-center justify-between">
                 <Link to="/dashboard">
                   <Button variant="secondary" className="px-6">Cancel</Button>
                 </Link>
-                <Link to="/b/board-1">
-                  <Button variant="primary" className="px-8 flex items-center gap-2">
-                    <span className="text-lg leading-none">+</span> Create Board
-                  </Button>
-                </Link>
+                <Button 
+                  variant="primary" 
+                  className="px-8 flex items-center gap-2" 
+                  onClick={async () => {
+                    // Try to create the board
+                    try {
+                      // Get workspace
+                      const wss = await workspaceApi.getMyWorkspaces();
+                      if (wss.length > 0) {
+                        const newBoard = await boardApi.createBoard(wss[0].id, { title: document.getElementById('boardName').value || 'New Board', position: 1000 });
+                        navigate(`/b/${newBoard.id}`);
+                      } else {
+                        alert("No workspace found. Please create a workspace first.");
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      alert("Failed to create board");
+                    }
+                  }}
+                >
+                  <span className="text-lg leading-none">+</span> Create Board
+                </Button>
               </div>
 
             </div>
@@ -190,7 +245,25 @@ const CreateBoardView = () => {
             </div>
           </div>
         </div>
-      </main>
+    </main>
+      
+      {/* Bottom Status Bar */}
+      <footer className="h-12 bg-white border-t border-border flex items-center justify-between px-6 text-xs text-gray-500 font-medium">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+          <span>All changes saved</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+            <span>Connected <span className="text-gray-400 px-1">•</span> 42ms</span>
+          </div>
+          <div className="flex items-center gap-2 text-primary font-semibold">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span>Live updates: On</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

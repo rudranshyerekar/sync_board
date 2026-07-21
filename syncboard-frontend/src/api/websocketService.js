@@ -66,6 +66,8 @@ class MockWebSocketService {
   // --- MOCK SIMULATION ENGINE ---
   // This simulates other users doing things on the board
   startSimulation() {
+    // Temporarily disabled to test actual backend integration without mock events
+    /*
     if (this.simulationInterval) return;
 
     this.simulationInterval = setInterval(() => {
@@ -105,6 +107,7 @@ class MockWebSocketService {
         }, 5000);
       }
     }, 10000);
+    */
   }
 }
 
