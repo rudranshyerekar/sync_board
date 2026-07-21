@@ -17,6 +17,8 @@ import com.syncboard.board.entity.Board;
 import com.syncboard.board.repository.BoardRepository;
 import com.syncboard.board.dto.BoardRequest;
 import com.syncboard.board.dto.BoardResponse;
+import com.syncboard.board.entity.BoardColumn;
+import com.syncboard.board.repository.BoardColumnRepository;
 
 
 @Service
@@ -27,6 +29,7 @@ public class BoardService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
+    private final BoardColumnRepository boardColumnRepository;
 
     @Transactional
     public BoardResponse createBoard(Long workspaceId, BoardRequest request, String currentUserEmail) {
@@ -44,7 +47,16 @@ public class BoardService {
                 .position(request.getPosition() != null ? request.getPosition() : computeNextPosition(workspaceId))
                 .build();
 
-        return mapToResponse(boardRepository.save(board));
+        Board savedBoard = boardRepository.save(board);
+
+        // Create default columns
+        BoardColumn todo = BoardColumn.builder().board(savedBoard).title("To Do").position(1000.0).build();
+        BoardColumn inProgress = BoardColumn.builder().board(savedBoard).title("In Progress").position(2000.0).build();
+        BoardColumn done = BoardColumn.builder().board(savedBoard).title("Done").position(3000.0).build();
+        
+        boardColumnRepository.saveAll(java.util.Arrays.asList(todo, inProgress, done));
+
+        return mapToResponse(savedBoard);
     }
 
     public List<BoardResponse> getBoards(Long workspaceId, String currentUserEmail) {
@@ -57,6 +69,17 @@ public class BoardService {
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public BoardResponse getBoard(Long boardId, String currentUserEmail) {
+        Board board = boardRepository.findById(boardId)
+            .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+            
+        User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this workspace");
+        }
+        return mapToResponse(board);
     }
     
     @Transactional

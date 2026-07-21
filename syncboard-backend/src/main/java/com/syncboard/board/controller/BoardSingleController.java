@@ -17,6 +17,13 @@ public class BoardSingleController {
 
     private final BoardService boardService;
     
+    @GetMapping
+    public ResponseEntity<BoardResponse> getBoard(
+            @PathVariable Long boardId,
+            Authentication authentication) {
+        return ResponseEntity.ok(boardService.getBoard(boardId, authentication.getName()));
+    }
+
     @PutMapping
     public ResponseEntity<BoardResponse> updateBoard(
             @PathVariable Long boardId,

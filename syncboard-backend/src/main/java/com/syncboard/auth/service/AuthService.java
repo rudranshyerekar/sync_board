@@ -6,6 +6,8 @@ import com.syncboard.user.entity.PresenceStatus;
 import com.syncboard.user.entity.User;
 import com.syncboard.user.repository.UserRepository;
 import com.syncboard.user.dto.UserResponse;
+import com.syncboard.workspace.service.WorkspaceService;
+import com.syncboard.workspace.dto.WorkspaceRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +20,6 @@ import com.syncboard.auth.dto.JwtAuthenticationResponse;
 import com.syncboard.auth.dto.LoginRequest;
 import com.syncboard.auth.dto.RegisterRequest;
 
-
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -27,6 +28,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
+    private final WorkspaceService workspaceService;
 
     @Transactional
     public JwtAuthenticationResponse register(RegisterRequest request) {
@@ -54,6 +56,11 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String accessToken = tokenProvider.generateToken(authentication);
         String refreshToken = tokenProvider.generateRefreshToken(authentication);
+
+        // Create default workspace for new user
+        WorkspaceRequest wsRequest = new WorkspaceRequest();
+        wsRequest.setName(request.getName() + "'s Workspace");
+        workspaceService.createWorkspace(wsRequest, request.getEmail());
 
         return JwtAuthenticationResponse.builder()
                 .accessToken(accessToken)
