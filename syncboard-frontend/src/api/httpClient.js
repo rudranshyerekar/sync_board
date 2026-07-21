@@ -20,11 +20,45 @@ httpClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor (placeholder for token refresh logic in Phase 1)
+// Response Interceptor for token refresh
 httpClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // We will add token refresh logic here in Phase 1
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // If error is 401 and it's not a retry, and not the refresh endpoint itself
+    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/refresh') {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (refreshToken) {
+        try {
+          // Use a fresh axios instance to avoid interceptors loop
+          const response = await axios.post(`${httpClient.defaults.baseURL}/auth/refresh?token=${refreshToken}`);
+          
+          if (response.data && response.data.accessToken) {
+            localStorage.setItem('accessToken', response.data.accessToken);
+            if (response.data.refreshToken) {
+              localStorage.setItem('refreshToken', response.data.refreshToken);
+            }
+            
+            // Retry the original request with new token
+            originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+            return httpClient(originalRequest);
+          }
+        } catch (refreshError) {
+          // If refresh fails, clear tokens and redirect to login
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token found, clear and redirect
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+      }
+    }
     return Promise.reject(error);
   }
 );

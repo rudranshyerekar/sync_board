@@ -6,7 +6,7 @@ import { CardPreview } from './CardPreview';
 import { useBoardStore } from '../state/useBoardStore';
 
 export const Column = ({ column }) => {
-  const { moveCardOptimistic, syncMoveCard } = useBoardStore();
+  const { moveCardOptimistic, syncMoveCard, createCard } = useBoardStore();
 
   const [{ isOver }, dropRef] = useDrop(() => ({
     accept: ItemTypes.CARD,
@@ -61,7 +61,15 @@ export const Column = ({ column }) => {
         ))}
         
         {/* Add Card Button */}
-        <button className="flex items-center justify-center gap-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 py-3 rounded-md transition-colors w-full mt-2 border border-dashed border-transparent hover:border-gray-300">
+        <button 
+          onClick={() => {
+            const title = prompt("Enter card title:");
+            if (title && title.trim() !== "") {
+              createCard(column.id, title.trim());
+            }
+          }}
+          className="flex items-center justify-center gap-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 py-3 rounded-md transition-colors w-full mt-2 border border-dashed border-transparent hover:border-gray-300"
+        >
           <Plus className="w-4 h-4" />
           <span className="text-sm font-medium">Add card</span>
         </button>
