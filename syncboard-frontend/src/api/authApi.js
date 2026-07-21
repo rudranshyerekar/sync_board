@@ -20,5 +20,10 @@ export const authApi = {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
     }
+  },
+
+  getCurrentUser: async () => {
+    const response = await httpClient.get('/users/me');
+    return response.data;
   }
 };

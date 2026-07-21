@@ -1,11 +1,19 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings, LogOut } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
+import { useAuthStore } from '../../features/auth/state/useAuthStore';
 
 export const MainLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const navItems = [
     { name: 'Boards', icon: LayoutDashboard, path: '/dashboard' },
@@ -14,6 +22,8 @@ export const MainLayout = () => {
     { name: 'Calendar', icon: Calendar, path: '/calendar' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
+
+  const currentUser = user || { name: 'Guest User', email: 'guest@example.com' };
 
   return (
     <div className="h-screen bg-bg-primary flex overflow-hidden font-sans">
@@ -59,12 +69,21 @@ export const MainLayout = () => {
         
         {/* User Profile */}
         <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-md transition-colors">
-            <Avatar user={{ name: "Harshal Moon", avatarUrl: "https://i.pravatar.cc/150?u=harshal" }} size="md" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">Harshal Moon</p>
-              <p className="text-xs text-gray-500 truncate">harshal@example.com</p>
+          <div className="flex items-center justify-between p-2 -mx-2 rounded-md hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar user={currentUser} size="md" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</p>
+                <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
+              </div>
             </div>
+            <button 
+              onClick={handleLogout}
+              className="text-gray-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>

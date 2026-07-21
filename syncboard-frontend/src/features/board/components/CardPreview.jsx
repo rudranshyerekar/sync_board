@@ -76,10 +76,10 @@ export const CardPreview = ({ card, columnId, index }) => {
                   <span>{card.comments}</span>
                 </div>
               )}
-              {card.date && (
+              {(card.deadline || card.date) && (
                 <div className="flex items-center gap-1 text-red-500 hover:text-red-600">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>{card.date}</span>
+                  <span>{card.deadline ? new Date(card.deadline).toLocaleDateString() : card.date}</span>
                 </div>
               )}
             </>
