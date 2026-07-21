@@ -16,26 +16,8 @@ export const useBoardStore = create((set, get) => ({
   fetchBoard: async (boardId) => {
     set({ isLoading: true, error: null });
     try {
-      // 1. Fetch Board
-      const boardData = await boardApi.getBoard(boardId);
-      
-      // 2. Fetch Columns
-      const columnsData = await boardApi.getColumns(boardId);
-      
-      // 3. Fetch Cards for each column
-      const columnsWithCards = await Promise.all(
-        columnsData.map(async (col) => {
-          const cardsData = await cardApi.getCards(col.id);
-          return { ...col, cards: cardsData };
-        })
-      );
-      
-      // Compose full board object
-      const fullBoard = {
-        ...boardData,
-        columns: columnsWithCards
-      };
-
+      // Fetch entire board hierarchy (board + columns + cards) in 1 request
+      const fullBoard = await boardApi.getFullBoard(boardId);
       set({ board: fullBoard, isLoading: false });
     } catch (err) {
       set({ error: err.response?.data?.message || err.message, isLoading: false });

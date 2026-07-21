@@ -19,6 +19,12 @@ import com.syncboard.board.dto.BoardRequest;
 import com.syncboard.board.dto.BoardResponse;
 import com.syncboard.board.entity.BoardColumn;
 import com.syncboard.board.repository.BoardColumnRepository;
+import com.syncboard.board.dto.ColumnWithCardsResponse;
+import com.syncboard.board.dto.FullBoardResponse;
+import com.syncboard.card.dto.CardResponse;
+import com.syncboard.card.entity.Card;
+import com.syncboard.card.repository.CardRepository;
+import com.syncboard.user.dto.UserResponse;
 
 
 @Service
@@ -30,6 +36,7 @@ public class BoardService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
     private final BoardColumnRepository boardColumnRepository;
+    private final CardRepository cardRepository;
 
     @Transactional
     public BoardResponse createBoard(Long workspaceId, BoardRequest request, String currentUserEmail) {
@@ -80,6 +87,70 @@ public class BoardService {
             throw new BadRequestException("Not a member of this workspace");
         }
         return mapToResponse(board);
+    }
+
+    public FullBoardResponse getFullBoard(Long boardId, String currentUserEmail) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+
+        User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this workspace");
+        }
+
+        List<BoardColumn> columns = boardColumnRepository.findByBoardIdOrderByPositionAsc(boardId);
+        List<ColumnWithCardsResponse> columnResponses = columns.stream().map(column -> {
+            List<Card> cards = cardRepository.findByColumnIdOrderByPositionAsc(column.getId());
+            List<CardResponse> cardResponses = cards.stream().map(this::mapCardToResponse).collect(Collectors.toList());
+
+            return ColumnWithCardsResponse.builder()
+                    .id(column.getId())
+                    .boardId(column.getBoard().getId())
+                    .title(column.getTitle())
+                    .position(column.getPosition())
+                    .cards(cardResponses)
+                    .createdAt(column.getCreatedAt())
+                    .updatedAt(column.getUpdatedAt())
+                    .build();
+        }).collect(Collectors.toList());
+
+        return FullBoardResponse.builder()
+                .id(board.getId())
+                .workspaceId(board.getWorkspace().getId())
+                .title(board.getTitle())
+                .position(board.getPosition())
+                .columns(columnResponses)
+                .createdAt(board.getCreatedAt())
+                .updatedAt(board.getUpdatedAt())
+                .build();
+    }
+
+    private CardResponse mapCardToResponse(Card card) {
+        UserResponse assigneeResponse = null;
+        if (card.getAssignee() != null) {
+            assigneeResponse = UserResponse.builder()
+                    .id(card.getAssignee().getId())
+                    .name(card.getAssignee().getName())
+                    .email(card.getAssignee().getEmail())
+                    .avatarUrl(card.getAssignee().getAvatarUrl())
+                    .presenceStatus(card.getAssignee().getPresenceStatus())
+                    .build();
+        }
+
+        return CardResponse.builder()
+                .id(card.getId())
+                .columnId(card.getColumn().getId())
+                .title(card.getTitle())
+                .description(card.getDescription())
+                .priority(card.getPriority())
+                .assigneeId(card.getAssignee() != null ? card.getAssignee().getId() : null)
+                .assignee(assigneeResponse)
+                .deadline(card.getDeadline())
+                .position(card.getPosition())
+                .version(card.getVersion())
+                .createdAt(card.getCreatedAt())
+                .updatedAt(card.getUpdatedAt())
+                .build();
     }
     
     @Transactional

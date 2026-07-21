@@ -145,6 +145,17 @@ public class CardService {
     }
 
     private CardResponse mapToResponse(Card card) {
+        com.syncboard.user.dto.UserResponse assigneeResponse = null;
+        if (card.getAssignee() != null) {
+            assigneeResponse = com.syncboard.user.dto.UserResponse.builder()
+                    .id(card.getAssignee().getId())
+                    .name(card.getAssignee().getName())
+                    .email(card.getAssignee().getEmail())
+                    .avatarUrl(card.getAssignee().getAvatarUrl())
+                    .presenceStatus(card.getAssignee().getPresenceStatus())
+                    .build();
+        }
+
         return CardResponse.builder()
                 .id(card.getId())
                 .columnId(card.getColumn().getId())
@@ -152,6 +163,7 @@ public class CardService {
                 .description(card.getDescription())
                 .priority(card.getPriority())
                 .assigneeId(card.getAssignee() != null ? card.getAssignee().getId() : null)
+                .assignee(assigneeResponse)
                 .deadline(card.getDeadline())
                 .position(card.getPosition())
                 .version(card.getVersion())

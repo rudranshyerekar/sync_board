@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, Check, Lock, Users, Code, Megaphone, Rocket, PenTool, Calendar, Plus, MoreHorizontal, Edit3 } from 'lucide-react';
 import { Button } from '../../../components/Button';
@@ -8,6 +8,52 @@ import { boardApi } from '../../../api/boardApi';
 
 const CreateBoardView = () => {
   const navigate = useNavigate();
+  const [boardName, setBoardName] = useState("Product Launch Plan");
+  const [description, setDescription] = useState("Plan and track tasks for the upcoming product launch.");
+  const [workspaces, setWorkspaces] = useState([]);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const ws = await workspaceApi.getMyWorkspaces();
+        setWorkspaces(ws);
+        if (ws.length > 0) {
+          setSelectedWorkspaceId(ws[0].id.toString());
+        }
+      } catch (err) {
+        console.error("Failed to fetch workspaces:", err);
+      }
+    };
+    fetchWorkspaces();
+  }, []);
+
+  const handleCreateBoard = async () => {
+    if (!boardName.trim()) {
+      alert("Please enter a board name");
+      return;
+    }
+    if (!selectedWorkspaceId) {
+      alert("Please select a workspace");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const newBoard = await boardApi.createBoard(selectedWorkspaceId, { 
+        title: boardName.trim(), 
+        position: 1000 
+      });
+      navigate(`/b/${newBoard.id}`);
+    } catch (e) {
+      console.error("Failed to create board:", e);
+      alert(e.response?.data?.message || "Failed to create board");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
       
@@ -55,6 +101,24 @@ const CreateBoardView = () => {
             <div className="bg-white p-8 rounded-xl border border-border shadow-sm space-y-8">
               
               <section>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Target Workspace</h2>
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Workspace <span className="text-red-500">*</span>
+                  </label>
+                  <select 
+                    value={selectedWorkspaceId}
+                    onChange={(e) => setSelectedWorkspaceId(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm bg-white"
+                  >
+                    {workspaces.map(ws => (
+                      <option key={ws.id} value={ws.id}>{ws.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </section>
+
+              <section>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Board Details</h2>
                 
                 <div className="mb-5">
@@ -63,12 +127,11 @@ const CreateBoardView = () => {
                   </label>
                   <div className="relative">
                     <input 
-                      id="boardName"
                       type="text" 
-                      defaultValue="Product Launch Plan"
-                      className="w-full border-2 border-primary rounded-md px-4 py-2.5 text-gray-900 focus:outline-none shadow-sm"
+                      value={boardName}
+                      onChange={(e) => setBoardName(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">18 / 60</span>
                   </div>
                 </div>
 
@@ -79,10 +142,10 @@ const CreateBoardView = () => {
                   <div className="relative">
                     <textarea 
                       rows={3}
-                      defaultValue="Plan and track tasks for the upcoming product launch."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                       className="w-full border border-gray-300 rounded-md px-4 py-2.5 text-gray-900 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm resize-none"
                     />
-                    <span className="absolute right-4 bottom-3 text-sm text-gray-400">50 / 500</span>
                   </div>
                 </div>
               </section>
@@ -112,60 +175,23 @@ const CreateBoardView = () => {
               </section>
 
               <section>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex justify-between items-center">
-                  <span>Invite Members <span className="text-gray-400 font-normal text-sm">(optional)</span></span>
-                </h2>
-                
-                <div className="border border-gray-300 rounded-md p-1.5 flex flex-wrap items-center gap-2 bg-white">
-                  <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
-                    <Avatar user={{ name: "Rohit Sharma", avatarUrl: "https://i.pravatar.cc/150?u=rohit" }} size="sm" className="w-5 h-5" />
-                    <span className="text-sm font-medium text-gray-700">Rohit Sharma</span>
-                    <button className="text-gray-400 hover:text-gray-600">×</button>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
-                    <Avatar user={{ name: "Sneha Patil", avatarUrl: "https://i.pravatar.cc/150?u=sneha" }} size="sm" className="w-5 h-5" />
-                    <span className="text-sm font-medium text-gray-700">Sneha Patil</span>
-                    <button className="text-gray-400 hover:text-gray-600">×</button>
-                  </div>
-                  <input 
-                    type="text" 
-                    placeholder="Search members by name or email..." 
-                    className="flex-1 min-w-[200px] border-none focus:outline-none focus:ring-0 text-sm p-1.5"
-                  />
-                </div>
-              </section>
-
-              <section>
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Board Columns</h2>
-                    <p className="text-sm text-gray-500 mt-1">Choose a template or customize your columns.</p>
+                    <h2 className="text-lg font-semibold text-gray-900">Default Board Columns</h2>
+                    <p className="text-sm text-gray-500 mt-1">Default Kanban workflow columns will be created automatically.</p>
                   </div>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary border border-primary/30 bg-primary/5 rounded-md hover:bg-primary/10 transition-colors">
-                    <Edit3 className="w-4 h-4" /> Customize Columns
-                  </button>
                 </div>
                 
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-gray-50 border border-gray-200 p-4 flex flex-col justify-between border-t-4 border-t-gray-400 shadow-sm relative">
                     <span className="font-semibold text-gray-900 text-[15px]">To Do</span>
-                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
                   </div>
                   <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#fffdf0] border border-yellow-100 p-4 flex flex-col justify-between border-t-4 border-t-yellow-400 shadow-sm relative">
                     <span className="font-semibold text-gray-900 text-[15px]">In Progress</span>
-                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
-                  </div>
-                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#f4f7ff] border border-blue-100 p-4 flex flex-col justify-between border-t-4 border-t-blue-500 shadow-sm relative">
-                    <span className="font-semibold text-gray-900 text-[15px]">Review</span>
-                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
                   </div>
                   <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#f3fbf5] border border-green-100 p-4 flex flex-col justify-between border-t-4 border-t-green-500 shadow-sm relative">
                     <span className="font-semibold text-gray-900 text-[15px]">Done</span>
-                    <MoreHorizontal className="w-5 h-5 text-gray-400 absolute right-3 top-3" />
                   </div>
-                  <button className="w-36 flex-shrink-0 h-28 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors">
-                    <span className="text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> Add Column</span>
-                  </button>
                 </div>
               </section>
 
@@ -176,24 +202,10 @@ const CreateBoardView = () => {
                 <Button 
                   variant="primary" 
                   className="px-8 flex items-center gap-2" 
-                  onClick={async () => {
-                    // Try to create the board
-                    try {
-                      // Get workspace
-                      const wss = await workspaceApi.getMyWorkspaces();
-                      if (wss.length > 0) {
-                        const newBoard = await boardApi.createBoard(wss[0].id, { title: document.getElementById('boardName').value || 'New Board', position: 1000 });
-                        navigate(`/b/${newBoard.id}`);
-                      } else {
-                        alert("No workspace found. Please create a workspace first.");
-                      }
-                    } catch (e) {
-                      console.error(e);
-                      alert("Failed to create board");
-                    }
-                  }}
+                  onClick={handleCreateBoard}
+                  disabled={loading}
                 >
-                  <span className="text-lg leading-none">+</span> Create Board
+                  <span className="text-lg leading-none">+</span> {loading ? 'Creating...' : 'Create Board'}
                 </Button>
               </div>
 

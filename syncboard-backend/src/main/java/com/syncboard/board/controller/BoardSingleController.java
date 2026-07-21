@@ -24,6 +24,13 @@ public class BoardSingleController {
         return ResponseEntity.ok(boardService.getBoard(boardId, authentication.getName()));
     }
 
+    @GetMapping("/full")
+    public ResponseEntity<com.syncboard.board.dto.FullBoardResponse> getFullBoard(
+            @PathVariable Long boardId,
+            Authentication authentication) {
+        return ResponseEntity.ok(boardService.getFullBoard(boardId, authentication.getName()));
+    }
+
     @PutMapping
     public ResponseEntity<BoardResponse> updateBoard(
             @PathVariable Long boardId,

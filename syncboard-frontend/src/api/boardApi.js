@@ -17,6 +17,11 @@ export const boardApi = {
     return response.data;
   },
 
+  getFullBoard: async (boardId) => {
+    const response = await httpClient.get(`/boards/${boardId}/full`);
+    return response.data;
+  },
+
   updateBoard: async (boardId, boardData) => {
     const response = await httpClient.put(`/boards/${boardId}`, boardData);
     return response.data;

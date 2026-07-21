@@ -41,12 +41,21 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  checkAuth: () => {
+  checkAuth: async () => {
     const token = localStorage.getItem('accessToken');
     if (token) {
-      set({ isAuthenticated: true });
-      // Initially, we might just assume they're authenticated if token exists
-      // A more robust app would fetch the user's profile from an endpoint
+      set({ isLoading: true });
+      try {
+        const userData = await authApi.getCurrentUser();
+        set({ user: userData, isAuthenticated: true, isLoading: false });
+      } catch (err) {
+        console.error("Session check failed:", err);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        set({ user: null, isAuthenticated: false, isLoading: false });
+      }
+    } else {
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   }
 }));

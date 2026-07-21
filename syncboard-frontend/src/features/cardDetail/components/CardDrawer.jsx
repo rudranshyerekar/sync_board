@@ -130,8 +130,10 @@ export const CardDrawer = () => {
               <div className="flex items-center gap-2 text-sm text-gray-500 font-medium mb-2">
                 <Clock className="w-4 h-4" /> Due Date
               </div>
-              {card.date ? (
-                <span className="text-sm font-medium text-gray-900">{card.date}</span>
+              {(card.deadline || card.date) ? (
+                <span className="text-sm font-medium text-gray-900">
+                  {card.deadline ? new Date(card.deadline).toLocaleDateString() : card.date}
+                </span>
               ) : (
                 <span className="text-sm text-gray-400">No due date</span>
               )}

@@ -99,8 +99,7 @@ public class AuthService {
             User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("User not found"));
             String accessToken = tokenProvider.generateTokenFromUsername(email);
-            // Re-use refresh token or generate new one
-            String newRefreshToken = tokenProvider.generateTokenFromUsername(email); // Typically issue new or keep old
+            String newRefreshToken = tokenProvider.generateRefreshTokenFromUsername(email);
             return JwtAuthenticationResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(newRefreshToken) // Let's keep it simple and just generate new one
