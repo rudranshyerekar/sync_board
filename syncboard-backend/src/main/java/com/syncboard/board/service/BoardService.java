@@ -108,6 +108,8 @@ public class BoardService {
                     .boardId(column.getBoard().getId())
                     .title(column.getTitle())
                     .position(column.getPosition())
+                    .color(column.getColor())
+                    .description(column.getDescription())
                     .cards(cardResponses)
                     .createdAt(column.getCreatedAt())
                     .updatedAt(column.getUpdatedAt())

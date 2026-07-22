@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Bell, Check, Lock, Users, Code, Megaphone, Rocket, PenTool, Calendar, Plus, MoreHorizontal, Edit3 } from 'lucide-react';
+import { Search, Bell, Check, Lock, Users, Code, Megaphone, Rocket, PenTool, Calendar, Plus, MoreHorizontal, Edit3, HelpCircle, X, MoreVertical } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { Avatar } from '../../../components/Avatar';
 import { workspaceApi } from '../../../api/workspaceApi';
@@ -13,6 +13,15 @@ const CreateBoardView = () => {
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('launch');
+
+  const templates = [
+    { id: 'software', icon: Code, color: 'text-indigo-600 bg-indigo-50 border-indigo-200', title: 'Software Development', desc: 'Perfect for agile development teams', boardName: 'Sprint Board', defaultDesc: 'Track sprint tasks and bugs.' },
+    { id: 'marketing', icon: Megaphone, color: 'text-pink-600 bg-pink-50 border-pink-200', title: 'Marketing Campaign', desc: 'Plan and execute marketing campaigns', boardName: 'Marketing Campaign', defaultDesc: 'Plan and execute upcoming marketing campaigns.' },
+    { id: 'launch', icon: Rocket, color: 'text-purple-600 bg-purple-100 border-purple-200', title: 'Product Launch', desc: 'Launch new products successfully', boardName: 'Product Launch Plan', defaultDesc: 'Plan and track tasks for the upcoming product launch.' },
+    { id: 'content', icon: PenTool, color: 'text-green-600 bg-green-50 border-green-200', title: 'Content Creation', desc: 'Manage content production workflow', boardName: 'Content Calendar', defaultDesc: 'Manage content production and review workflows.' },
+    { id: 'event', icon: Calendar, color: 'text-orange-600 bg-orange-50 border-orange-200', title: 'Event Planning', desc: 'Plan and organize events', boardName: 'Event Planning', defaultDesc: 'Plan and organize tasks for the upcoming event.' },
+  ];
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -79,11 +88,14 @@ const CreateBoardView = () => {
             <Bell className="w-5 h-5" />
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
+          <button className="text-gray-500 hover:text-gray-700 ml-1">
+            <HelpCircle className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
       {/* Main Form Area */}
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 overflow-y-auto p-8 relative">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
           
           {/* Left Column: Form */}
@@ -175,22 +187,69 @@ const CreateBoardView = () => {
               </section>
 
               <section>
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Default Board Columns</h2>
-                    <p className="text-sm text-gray-500 mt-1">Default Kanban workflow columns will be created automatically.</p>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Invite Members <span className="text-gray-400 font-normal text-sm">(optional)</span></h2>
+                <div className="border border-gray-300 rounded-md p-2 flex items-center flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
+                    <Avatar user={{ name: "Rohit Sharma" }} size="sm" className="w-5 h-5" />
+                    <span className="text-sm font-medium text-gray-700">Rohit Sharma</span>
+                    <X className="w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-600" />
                   </div>
+                  <div className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
+                    <Avatar user={{ name: "Sneha Patil" }} size="sm" className="w-5 h-5" />
+                    <span className="text-sm font-medium text-gray-700">Sneha Patil</span>
+                    <X className="w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-600" />
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Search members by name or email..." 
+                    className="flex-1 min-w-[200px] border-none outline-none text-sm px-2 py-1 text-gray-700 placeholder-gray-400"
+                  />
+                  <div className="px-2 text-gray-400 cursor-pointer">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Board Columns</h2>
+                    <p className="text-sm text-gray-500 mt-1">Choose a template or customize your columns.</p>
+                  </div>
+                  <button className="flex items-center gap-2 text-indigo-600 font-medium text-sm px-3 py-1.5 border border-indigo-200 rounded-md hover:bg-indigo-50 transition-colors bg-white">
+                    <Edit3 className="w-4 h-4" /> Customize Columns
+                  </button>
                 </div>
                 
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-gray-50 border border-gray-200 p-4 flex flex-col justify-between border-t-4 border-t-gray-400 shadow-sm relative">
-                    <span className="font-semibold text-gray-900 text-[15px]">To Do</span>
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold text-gray-900 text-[14px]">To Do</span>
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </div>
                   </div>
                   <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#fffdf0] border border-yellow-100 p-4 flex flex-col justify-between border-t-4 border-t-yellow-400 shadow-sm relative">
-                    <span className="font-semibold text-gray-900 text-[15px]">In Progress</span>
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold text-gray-900 text-[14px]">In Progress</span>
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-blue-50 border border-blue-100 p-4 flex flex-col justify-between border-t-4 border-t-blue-500 shadow-sm relative">
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold text-gray-900 text-[14px]">Review</span>
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </div>
                   </div>
                   <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-[#f3fbf5] border border-green-100 p-4 flex flex-col justify-between border-t-4 border-t-green-500 shadow-sm relative">
-                    <span className="font-semibold text-gray-900 text-[15px]">Done</span>
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold text-gray-900 text-[14px]">Done</span>
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="w-36 flex-shrink-0 h-28 rounded-lg bg-transparent border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:border-gray-400 cursor-pointer transition-colors">
+                    <div className="flex items-center gap-1.5 font-medium text-[14px]">
+                      <Plus className="w-4 h-4" /> Add Column
+                    </div>
                   </div>
                 </div>
               </section>
@@ -220,21 +279,23 @@ const CreateBoardView = () => {
             </div>
 
             <div className="space-y-3">
-              {[
-                { icon: Code, color: 'text-indigo-600 bg-indigo-50', title: 'Software Development', desc: 'Perfect for agile development teams' },
-                { icon: Megaphone, color: 'text-pink-600 bg-pink-50', title: 'Marketing Campaign', desc: 'Plan and execute marketing campaigns' },
-                { icon: Rocket, color: 'text-purple-600 bg-purple-100 border-purple-200', title: 'Product Launch', desc: 'Launch new products successfully', selected: true },
-                { icon: PenTool, color: 'text-green-600 bg-green-50', title: 'Content Creation', desc: 'Manage content production workflow' },
-                { icon: Calendar, color: 'text-orange-600 bg-orange-50', title: 'Event Planning', desc: 'Plan and organize events' },
-              ].map((tpl, i) => (
-                <div key={i} className={`p-4 rounded-xl border flex gap-4 cursor-pointer transition-all ${tpl.selected ? 'border-primary shadow-sm bg-white ring-1 ring-primary' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+              {templates.map((tpl) => (
+                <div 
+                  key={tpl.id} 
+                  onClick={() => {
+                    setSelectedTemplateId(tpl.id);
+                    setBoardName(tpl.boardName);
+                    setDescription(tpl.defaultDesc);
+                  }}
+                  className={`p-4 rounded-xl border flex gap-4 cursor-pointer transition-all ${selectedTemplateId === tpl.id ? 'border-primary shadow-sm bg-white ring-1 ring-primary' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                >
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 border ${tpl.color}`}>
                     <tpl.icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 relative">
-                    <h4 className={`font-semibold text-sm ${tpl.selected ? 'text-primary' : 'text-gray-900'}`}>{tpl.title}</h4>
+                    <h4 className={`font-semibold text-sm ${selectedTemplateId === tpl.id ? 'text-primary' : 'text-gray-900'}`}>{tpl.title}</h4>
                     <p className="text-xs text-gray-500 mt-0.5">{tpl.desc}</p>
-                    {tpl.selected && (
+                    {selectedTemplateId === tpl.id && (
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
@@ -257,25 +318,25 @@ const CreateBoardView = () => {
             </div>
           </div>
         </div>
-    </main>
-      
-      {/* Bottom Status Bar */}
-      <footer className="h-12 bg-white border-t border-border flex items-center justify-between px-6 text-xs text-gray-500 font-medium">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          <span>All changes saved</span>
-        </div>
-        <div className="flex items-center gap-4">
+
+        {/* Floating Bottom Status Bar */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-lg rounded-full flex items-center justify-between px-6 py-2.5 text-xs text-gray-600 font-medium z-20 w-[600px] max-w-full">
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-            <span>Connected <span className="text-gray-400 px-1">•</span> 42ms</span>
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span>All changes saved</span>
           </div>
-          <div className="flex items-center gap-2 text-primary font-semibold">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            <span>Live updates: On</span>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>Connected <span className="text-gray-300 mx-1">•</span> 42ms</span>
+            </div>
+            <div className="flex items-center gap-2 text-indigo-600 font-semibold">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>Live updates On</span>
+            </div>
           </div>
         </div>
-      </footer>
+      </main>
     </div>
   );
 };

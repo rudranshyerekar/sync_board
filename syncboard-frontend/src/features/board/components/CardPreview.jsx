@@ -6,8 +6,9 @@ import { Avatar } from '../../../components/Avatar';
 import { useBoardStore } from '../state/useBoardStore';
 
 export const CardPreview = ({ card, columnId, index }) => {
-  const { setSelectedCard, editingCards } = useBoardStore();
+  const { setSelectedCard, editingCards, board } = useBoardStore();
   const editingUser = editingCards[card.id];
+  const isDoneColumn = board?.columns?.find(c => c.id === columnId)?.title?.toLowerCase() === 'done';
   
   const [{ isDragging }, dragRef] = useDrag(() => ({
     type: ItemTypes.CARD,
@@ -25,6 +26,16 @@ export const CardPreview = ({ card, columnId, index }) => {
       case 'orange': return 'text-orange-600 bg-orange-50';
       case 'green': return 'text-green-600 bg-green-50';
       default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getPriorityColors = (priority) => {
+    switch (priority) {
+      case 'URGENT': return 'text-red-600 bg-red-50 border border-red-200';
+      case 'HIGH': return 'text-orange-600 bg-orange-50 border border-orange-200';
+      case 'MEDIUM': return 'text-yellow-700 bg-yellow-50 border border-yellow-200';
+      case 'LOW': return 'text-blue-600 bg-blue-50 border border-blue-200';
+      default: return 'text-gray-600 bg-gray-50 border border-gray-200';
     }
   };
 
@@ -53,9 +64,14 @@ export const CardPreview = ({ card, columnId, index }) => {
       <div className="flex items-center justify-between">
         
         {/* Left Side: Avatar and Label */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           {card.assignee && (
             <Avatar user={card.assignee} size="sm" />
+          )}
+          {card.priority && (
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getPriorityColors(card.priority)}`}>
+              {card.priority}
+            </span>
           )}
           {card.label && (
             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getLabelColors(card.label.color)}`}>
@@ -66,8 +82,10 @@ export const CardPreview = ({ card, columnId, index }) => {
 
         {/* Right Side: Meta (Comments, Date, or Done Checkmark) */}
         <div className="flex items-center gap-3 text-gray-400 text-xs font-medium">
-          {card.done ? (
-            <CheckCircle2 className="w-5 h-5 text-success fill-success/10" />
+          {isDoneColumn || card.done ? (
+            <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
           ) : (
             <>
               {card.comments > 0 && (

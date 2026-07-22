@@ -14,6 +14,8 @@ public class ColumnWithCardsResponse {
     private Long boardId;
     private String title;
     private Double position;
+    private String color;
+    private String description;
     private List<CardResponse> cards;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

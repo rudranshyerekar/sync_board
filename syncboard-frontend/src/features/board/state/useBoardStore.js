@@ -7,10 +7,12 @@ export const useBoardStore = create((set, get) => ({
   board: null,
   isLoading: false,
   error: null,
+  searchQuery: '',
   selectedCardId: null,
   activeUsers: [],
   editingCards: {}, // { cardId: user }
 
+  setSearchQuery: (query) => set({ searchQuery: query }),
   setSelectedCard: (cardId) => set({ selectedCardId: cardId }),
 
   fetchBoard: async (boardId) => {
@@ -24,24 +26,58 @@ export const useBoardStore = create((set, get) => ({
     }
   },
 
-  createColumn: async (boardId, title) => {
+  createColumn: async (boardId, payload) => {
     try {
-      await boardApi.createColumn(boardId, { title });
+      const data = typeof payload === 'string' ? { title: payload } : payload;
+      await boardApi.createColumn(boardId, data);
       get().fetchBoard(boardId);
     } catch (err) {
       console.error("Failed to create column:", err);
+      alert("Failed to create column.");
     }
   },
 
-  createCard: async (columnId, title) => {
+  updateBoard: async (boardId, title) => {
     try {
-      await cardApi.createCard(columnId, { title });
+      await boardApi.updateBoard(boardId, { title });
+      get().fetchBoard(boardId);
+    } catch (err) {
+      console.error("Failed to update board:", err);
+      alert("Failed to rename board.");
+    }
+  },
+
+  updateColumn: async (columnId, title) => {
+    try {
+      await boardApi.updateColumn(columnId, { title });
+      get().fetchBoard(get().board?.id);
+    } catch (err) {
+      console.error("Failed to update column:", err);
+      alert("Failed to rename column.");
+    }
+  },
+
+  deleteColumn: async (columnId) => {
+    try {
+      await boardApi.deleteColumn(columnId);
+      get().fetchBoard(get().board?.id);
+    } catch (err) {
+      console.error("Failed to delete column:", err);
+      alert("Failed to delete column.");
+    }
+  },
+
+  createCard: async (columnId, payload) => {
+    try {
+      const data = typeof payload === 'string' ? { title: payload } : payload;
+      await cardApi.createCard(columnId, data);
       const boardId = get().board?.id;
       if (boardId) {
         get().fetchBoard(boardId);
       }
     } catch (err) {
       console.error("Failed to create card:", err);
+      alert("Failed to create card.");
     }
   },
 
@@ -54,6 +90,18 @@ export const useBoardStore = create((set, get) => ({
       }
     } catch (err) {
       console.error("Failed to update card:", err);
+      alert("Failed to update card. Changes have been reverted.");
+      get().fetchBoard(get().board?.id);
+    }
+  },
+
+  deleteCard: async (cardId) => {
+    try {
+      await cardApi.deleteCard(cardId);
+      get().fetchBoard(get().board?.id);
+    } catch (err) {
+      console.error("Failed to delete card:", err);
+      alert("Failed to delete card.");
     }
   },
 
@@ -148,11 +196,13 @@ export const useBoardStore = create((set, get) => ({
       
       if (cards.length > 1) {
         if (newIndex === 0) {
-           newPosition = cards[1].position / 2.0;
+           newPosition = (cards[1].position || 1000.0) / 2.0;
         } else if (newIndex === cards.length - 1) {
-           newPosition = cards[cards.length - 2].position + 1000.0;
+           newPosition = (cards[cards.length - 2].position || 1000.0) + 1000.0;
         } else {
-           newPosition = (cards[newIndex - 1].position + cards[newIndex + 1].position) / 2.0;
+           const prevPos = cards[newIndex - 1].position || 1000.0;
+           const nextPos = cards[newIndex + 1].position || 2000.0;
+           newPosition = (prevPos + nextPos) / 2.0;
         }
       }
 
@@ -161,6 +211,7 @@ export const useBoardStore = create((set, get) => ({
       // get().fetchBoard(get().board.id);
     } catch (err) {
       console.error("Failed to sync card move:", err);
+      alert("Failed to move card. Changes have been reverted.");
       // Trigger a re-fetch to repair state on failure
       get().fetchBoard(get().board?.id);
     }

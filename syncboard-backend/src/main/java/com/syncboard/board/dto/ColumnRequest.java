@@ -8,4 +8,6 @@ public class ColumnRequest {
     @NotBlank
     private String title;
     private Double position;
+    private String color;
+    private String description;
 }

@@ -42,6 +42,8 @@ public class BoardColumnService {
         BoardColumn column = BoardColumn.builder()
                 .board(board)
                 .title(request.getTitle())
+                .color(request.getColor())
+                .description(request.getDescription())
                 .position(request.getPosition() != null ? request.getPosition() : computeNextPosition(boardId))
                 .build();
 
@@ -75,6 +77,12 @@ public class BoardColumnService {
         if (request.getPosition() != null) {
             column.setPosition(request.getPosition());
         }
+        if (request.getColor() != null) {
+            column.setColor(request.getColor());
+        }
+        if (request.getDescription() != null) {
+            column.setDescription(request.getDescription());
+        }
 
         return mapToResponse(boardColumnRepository.save(column));
     }
@@ -103,6 +111,8 @@ public class BoardColumnService {
                 .boardId(column.getBoard().getId())
                 .title(column.getTitle())
                 .position(column.getPosition())
+                .color(column.getColor())
+                .description(column.getDescription())
                 .createdAt(column.getCreatedAt())
                 .updatedAt(column.getUpdatedAt())
                 .build();
