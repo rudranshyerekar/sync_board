@@ -108,6 +108,12 @@ export const useBoardStore = create((set, get) => ({
   // --- Real-time Sync (Phase 3 & 4) ---
   initRealTimeSync: (boardId) => {
     const token = localStorage.getItem('accessToken');
+    
+    // Register reconnect callback for full resync
+    wsService.setOnReconnect(() => {
+      get().fetchBoard(boardId);
+    });
+
     wsService.connect(token, () => {
       // 1. Subscribe to Presence
       wsService.subscribe(`/topic/board/${boardId}/presence`, (message) => {
