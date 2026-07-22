@@ -13,7 +13,7 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ---
 
-## Current Phase: Phase 4 — Presence + Editing
+## Current Phase: Phase 5 — Comments + Notifications
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -21,8 +21,8 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 | Phase 1 — Backend CRUD + Auth | ✅ Complete | Entities, REST APIs, JWT auth, authorization, `GET /api/users/me` |
 | Phase 2 — Frontend & Backend Integration | ✅ Complete | Full REST integration, Session restoration, DTO alignment, Aggregated `/api/boards/{id}/full` API |
 | Phase 3 — WebSocket Card Sync | ✅ Complete | STOMP server message broker (`WebSocketConfig`), client STOMP subscriptions, live card moves |
-| Phase 4 — Presence + Editing | 🚧 In Progress | Heartbeat, online/offline status, soft-lock card indicators |
-| Phase 5 — Comments + Notifications | ⬜ Not Started | Live comments thread, notifications dispatcher |
+| Phase 4 — Presence + Editing | ✅ Complete | Heartbeat, online/offline status, soft-lock card indicators |
+| Phase 5 — Comments + Notifications | 🚧 In Progress | Live comments thread, notifications dispatcher |
 | Phase 6 — Activity + Hardening | ⬜ Not Started | Activity feed audit, permission polish, concurrency hardening |
 | Phase 7 — Docker + Tests + Deploy | ⬜ Not Started | Dockerfiles, unit/integration testing, deployment docs |
 
@@ -121,6 +121,10 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 - **UI Alignment - Sidebar:** Added "YOUR BOARDS" section to the left sidebar in `MainLayout.jsx` with static mock data to match the UI design.
 - **UI Alignment - Create Card Modal:** Replaced the inline textarea with a detailed `CreateCardModal.jsx` for card creation. Updated `useBoardStore` to transmit the full payload (title, description, priority, deadline, assigneeId, position).
 - **UI Alignment - Create Column Modal:** Created `CreateColumnModal.jsx` featuring color swatches and position selection. Updated `BoardColumn` entity and `ColumnResponse/Request` DTOs to include `color` and `description`. Updated `BoardService` and `BoardColumnService` to map and persist the new column metadata, rendering dynamic colored dots in `Column.jsx` headers.
+- **Phase 4 Real-Time Presence & Editing:** Implemented robust heartbeat and session eviction.
+  - **Backend:** Added `UserSession.java` and `PresenceService.java` to track connected users. Created a `@Scheduled` loop to forcefully evict users missing heartbeats for > 10s. Added `PresenceWebSocketController` to handle `/presence/heartbeat` STOMP messages.
+  - **Frontend:** Created `usePresenceHeartbeat.js` hook to send continuous heartbeats with the `selectedCardId` (soft-lock indicator) every 4s, and track client idle state (`mousemove`, `keydown`). Updated `BoardView.jsx` to mount the hook and render dynamic online user avatars (green=Live, yellow=Idle, gray=Away).
+- **Frontend Store CRUD & Bug Fixes:** Added missing `updateBoard`, `updateColumn`, `deleteColumn`, and `deleteCard` methods to `useBoardStore.js`. Improved error handling with alerts and fallback re-fetches. Fixed optimistic positioning math by adding default position values. Added `searchQuery` state for future filtering.
 
 ### 2026-07-20
 - Built full React frontend Kanban UI using `react-dnd` and Tailwind CSS matching the visual mockup.
