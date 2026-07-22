@@ -116,6 +116,9 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 - **Multi-Workspace & Member Invite UI:** Updated `DashboardView.jsx` to fetch and group boards per workspace dynamically across all user workspaces. Added `InviteMemberModal.jsx` connected to `workspaceApi.inviteMember`. Refactored `CreateBoardView.jsx` with controlled workspace selection dropdown and form state.
 - **Full Build Verification:** Backend compiled clean (`./mvnw clean compile` -> `BUILD SUCCESS`) and frontend built clean (`npm run build` -> `vite build` succeeded in 649ms).
 - **Completed Quality & Security Audits:** Created 24-point system architecture report, 15-point full-stack integration review, and pre-testing bug hunting audit.
+- **UI Alignment - Sidebar:** Added "YOUR BOARDS" section to the left sidebar in `MainLayout.jsx` with static mock data to match the UI design.
+- **UI Alignment - Create Card Modal:** Replaced the inline textarea with a detailed `CreateCardModal.jsx` for card creation. Updated `useBoardStore` to transmit the full payload (title, description, priority, deadline, assigneeId, position).
+- **UI Alignment - Create Column Modal:** Created `CreateColumnModal.jsx` featuring color swatches and position selection. Updated `BoardColumn` entity and `ColumnResponse/Request` DTOs to include `color` and `description`. Updated `BoardService` and `BoardColumnService` to map and persist the new column metadata, rendering dynamic colored dots in `Column.jsx` headers.
 
 ### 2026-07-20
 - Built full React frontend Kanban UI using `react-dnd` and Tailwind CSS matching the visual mockup.
