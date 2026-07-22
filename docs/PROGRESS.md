@@ -13,15 +13,15 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ---
 
-## Current Phase: Phase 3 — Real-Time WebSocket STOMP Sync & Presence
+## Current Phase: Phase 4 — Presence + Editing
 
 | Phase | Status | Description |
 |-------|--------|-------------|
 | Phase 0 — Project Setup | ✅ Complete | Skeleton project, folder structure, DB setup |
 | Phase 1 — Backend CRUD + Auth | ✅ Complete | Entities, REST APIs, JWT auth, authorization, `GET /api/users/me` |
 | Phase 2 — Frontend & Backend Integration | ✅ Complete | Full REST integration, Session restoration, DTO alignment, Aggregated `/api/boards/{id}/full` API |
-| Phase 3 — WebSocket Card Sync | 🚧 In Progress | STOMP server message broker (`WebSocketConfig`), client STOMP subscriptions, live card moves |
-| Phase 4 — Presence + Editing | 🚧 In Progress (Frontend UI done) | Heartbeat, online/offline status, soft-lock card indicators |
+| Phase 3 — WebSocket Card Sync | ✅ Complete | STOMP server message broker (`WebSocketConfig`), client STOMP subscriptions, live card moves |
+| Phase 4 — Presence + Editing | 🚧 In Progress | Heartbeat, online/offline status, soft-lock card indicators |
 | Phase 5 — Comments + Notifications | ⬜ Not Started | Live comments thread, notifications dispatcher |
 | Phase 6 — Activity + Hardening | ⬜ Not Started | Activity feed audit, permission polish, concurrency hardening |
 | Phase 7 — Docker + Tests + Deploy | ⬜ Not Started | Dockerfiles, unit/integration testing, deployment docs |
@@ -97,9 +97,7 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 | # | Issue | Impact | File Location / Reference |
 |---|-------|--------|---------------------------|
-| 1 | **Missing Server-Side WebSocket Broker (`WebSocketConfig`)** | Critical | `syncboard-backend/src/main/java/com/syncboard/config` |
-| 2 | **Mock Client in `websocketService.js`** | Critical | `syncboard-frontend/src/api/websocketService.js` |
-| 3 | **Unimplemented Backend Domain Services (Comments, Activity, Notifications)** | Important | `com.syncboard.comment`, `com.syncboard.activity`, `com.syncboard.notification` (`.gitkeep` files) |
+| 1 | **Unimplemented Backend Domain Services (Presence, Comments, Activity, Notifications)** | Critical | `com.syncboard.presence`, `com.syncboard.comment`, `com.syncboard.activity`, `com.syncboard.notification` |
 | 4 | **Card Priority Selector Missing in Drawer UI** | Medium | `syncboard-frontend/src/features/cardDetail/components/CardDrawer.jsx` |
 | 5 | **Mobile Responsive Sidebar Menu Missing (< 768px)** | Medium | `syncboard-frontend/src/app/layout/MainLayout.jsx` |
 
@@ -108,6 +106,10 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 ## Recent Changes (Reverse Chronological)
 
 ### 2026-07-22
+- **Phase 3 Real-Time WebSocket Integration:** Successfully replaced the frontend's mock WebSocket service with a real SockJS + STOMP client using `@stomp/stompjs`. 
+- **Backend WebSocket Config:** Implemented `WebSocketConfig.java` to enable the STOMP message broker on the `/ws` endpoint.
+- **WebSocket JWT Auth:** Created `JwtChannelInterceptor.java` to secure the STOMP connection by verifying the JWT access token sent in the `CONNECT` frame.
+- **Live Card Moves:** Configured `useBoardStore` to push card move events through STOMP (`/app/board/{boardId}/card/move`), and added `BoardWebSocketController` to broadcast `CARD_MOVED` and `CARD_EDITING_START` events to all connected clients.
 - **Full-Stack Integration Fixes:** Resolved 5 key integration gaps between `syncboard-backend` and `syncboard-frontend`.
 - **User Session Restoration:** Created `GET /api/users/me` endpoint in backend (`UserController.java`, `UserService.java`). Updated `useAuthStore.checkAuth()` to fetch user details when `accessToken` is found in `localStorage`, calling it on boot in `App.jsx` so sessions persist on browser refresh (F5). Bound dynamic user profile and logout action in `MainLayout.jsx`.
 - **JWT Refresh TTL Fix:** Updated `AuthService.java` and `JwtTokenProvider.java` so refreshed tokens issue new refresh tokens with the full 7-day TTL instead of short access token TTL.

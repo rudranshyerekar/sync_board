@@ -59,7 +59,8 @@ export const useBoardStore = create((set, get) => ({
 
   // --- Real-time Sync (Phase 3 & 4) ---
   initRealTimeSync: (boardId) => {
-    wsService.connect('mock-token', () => {
+    const token = localStorage.getItem('accessToken');
+    wsService.connect(token, () => {
       // 1. Subscribe to Presence
       wsService.subscribe(`/topic/board/${boardId}/presence`, (message) => {
         if (message.type === 'PRESENCE_UPDATE') {
@@ -157,6 +158,10 @@ export const useBoardStore = create((set, get) => ({
       }
 
       await cardApi.moveCard(cardId, targetColId, newPosition);
+      // Publish the visual move to STOMP so other clients can animate it
+      wsService.publish(`/app/board/${get().board?.id}/card/move`, {
+        cardId, sourceColId, targetColId, newIndex
+      });
       // Optional: re-fetch to ensure sync
       // get().fetchBoard(get().board.id);
     } catch (err) {
