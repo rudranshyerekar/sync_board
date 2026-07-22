@@ -9,6 +9,7 @@ import { Button } from '../../../components/Button';
 import { Avatar } from '../../../components/Avatar';
 import { CardDrawer } from '../../cardDetail/components/CardDrawer';
 import { CreateColumnModal } from './CreateColumnModal';
+import { usePresenceHeartbeat } from '../hooks/usePresenceHeartbeat';
 
 const BoardView = () => {
   const { boardId } = useParams();
@@ -18,6 +19,8 @@ const BoardView = () => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [isAddingColumn, setIsAddingColumn] = useState(false);
+  
+  const presenceStatus = usePresenceHeartbeat(boardId);
 
   useEffect(() => {
     if (boardId) {
@@ -137,10 +140,12 @@ const BoardView = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 ml-1">
-                  <span className="text-sm text-gray-500 flex items-center gap-1.5"><UserPlus className="w-3.5 h-3.5"/> 4 members</span>
+                  <span className="text-sm text-gray-500 flex items-center gap-1.5"><UserPlus className="w-3.5 h-3.5"/> {activeUsers.length} members</span>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-600">Live</span>
+                    <div className={`w-2 h-2 rounded-full ${presenceStatus === 'online' ? 'bg-green-500' : presenceStatus === 'idle' ? 'bg-yellow-500' : 'bg-gray-400'}`}></div>
+                    <span className={`text-sm font-medium ${presenceStatus === 'online' ? 'text-green-600' : presenceStatus === 'idle' ? 'text-yellow-600' : 'text-gray-500'}`}>
+                      {presenceStatus === 'online' ? 'Live' : presenceStatus === 'idle' ? 'Idle' : 'Away'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -205,30 +210,24 @@ const BoardView = () => {
               <div className="p-5 border-b border-gray-100">
                 <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-4">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  Online (4)
+                  Online ({activeUsers.length})
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <Avatar user={{ name: "Harshal Moon" }} size="sm" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 leading-tight">Harshal Moon (You)</p>
-                      <p className="text-xs text-indigo-600 mt-0.5">Editing a card</p>
+                  {activeUsers.map(user => (
+                    <div key={user.id} className="flex gap-3">
+                      <div className="relative">
+                        <Avatar user={user} size="sm" />
+                        <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-500' : user.status === 'idle' ? 'bg-yellow-500' : 'bg-gray-400'}`}></div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 leading-tight">{user.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 capitalize">{user.status === 'online' ? 'Viewing board' : user.status}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <Avatar user={{ name: "Sneha Patil" }} size="sm" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 leading-tight">Sneha Patil</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Viewing board</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <Avatar user={{ name: "Rohit Sharma" }} size="sm" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 leading-tight">Rohit Sharma</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Dragging a card</p>
-                    </div>
-                  </div>
+                  ))}
+                  {activeUsers.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No one else is here.</p>
+                  )}
                 </div>
               </div>
               
