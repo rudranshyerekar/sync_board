@@ -7,6 +7,7 @@ import { workspaceApi } from '../../../api/workspaceApi';
 import { boardApi } from '../../../api/boardApi';
 import { useAuthStore } from '../../auth/state/useAuthStore';
 import { InviteMemberModal } from './InviteMemberModal';
+import { CreateWorkspaceModal } from './CreateWorkspaceModal';
 
 const DashboardView = () => {
   const { user } = useAuthStore();
@@ -14,6 +15,8 @@ const DashboardView = () => {
   const [workspaceBoards, setWorkspaceBoards] = useState({}); // { [workspaceId]: Board[] }
   const [loading, setLoading] = useState(true);
   const [selectedInviteWs, setSelectedInviteWs] = useState(null);
+  const [isCreateWsOpen, setIsCreateWsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,6 +59,16 @@ const DashboardView = () => {
 
   const allBoards = Object.values(workspaceBoards).flat();
 
+  // Filter boards and workspaces based on searchQuery
+  const filteredBoards = allBoards.filter(board => 
+    !searchQuery || board.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredWorkspaces = workspaces.filter(ws => 
+    !searchQuery || ws.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (workspaceBoards[ws.id] || []).some(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
       
@@ -68,12 +81,17 @@ const DashboardView = () => {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input 
               type="text" 
-              placeholder="Search boards..." 
+              placeholder="Search boards and workspaces..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-4 py-1.5 border border-gray-300 rounded-md text-sm w-64 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <Button variant="secondary" className="flex items-center gap-2 py-1.5 text-sm text-gray-700">
             <Filter className="w-4 h-4" /> Filter
+          </Button>
+          <Button variant="secondary" onClick={() => setIsCreateWsOpen(true)} className="py-1.5 text-sm">
+            Create Workspace
           </Button>
           <Link to="/b/create">
             <Button variant="primary" className="py-1.5">Create Board</Button>
@@ -91,13 +109,13 @@ const DashboardView = () => {
             </div>
           ) : (
             <>
-              {allBoards.length > 0 && (
+              {filteredBoards.length > 0 && !searchQuery && (
                 <div className="mb-8">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Clock className="w-5 h-5 text-gray-500" /> Recently Viewed
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {allBoards.slice(0, 4).map((board) => (
+                    {filteredBoards.slice(0, 4).map((board) => (
                       <Link key={`recent-${board.id}`} to={`/b/${board.id}`} className="block group">
                         <div className="bg-white rounded-xl border border-border overflow-hidden hover:shadow-md hover:border-primary transition-all">
                           <div className={`h-24 ${getRandomColor(board.id)} flex items-center justify-center`}>
@@ -118,8 +136,10 @@ const DashboardView = () => {
                   <Users className="w-5 h-5 text-gray-500" /> Your Workspaces
                 </h2>
                 
-                {workspaces.map((ws) => {
-                  const boards = workspaceBoards[ws.id] || [];
+                {filteredWorkspaces.map((ws) => {
+                  const boards = (workspaceBoards[ws.id] || []).filter(b => 
+                    !searchQuery || b.title.toLowerCase().includes(searchQuery.toLowerCase())
+                  );
                   return (
                     <div key={ws.id} className="bg-white rounded-xl border border-border shadow-sm overflow-hidden mb-6">
                       <div className="px-6 py-4 border-b border-border bg-gray-50 flex items-center justify-between">
@@ -172,9 +192,18 @@ const DashboardView = () => {
                   );
                 })}
 
-                {workspaces.length === 0 && (
-                  <div className="p-12 text-center border-2 border-dashed border-border rounded-xl">
+                {workspaces.length === 0 && !searchQuery && (
+                  <div className="p-12 text-center border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center">
                     <p className="text-text-secondary mb-4">You don't have any workspaces yet.</p>
+                    <Button variant="primary" onClick={() => setIsCreateWsOpen(true)}>
+                      Create Workspace
+                    </Button>
+                  </div>
+                )}
+                
+                {filteredWorkspaces.length === 0 && searchQuery && (
+                  <div className="p-12 text-center text-gray-500">
+                    No results found for "{searchQuery}".
                   </div>
                 )}
               </div>
@@ -193,6 +222,16 @@ const DashboardView = () => {
           workspaceName={selectedInviteWs.name}
         />
       )}
+      
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal 
+        isOpen={isCreateWsOpen}
+        onClose={() => setIsCreateWsOpen(false)}
+        onWorkspaceCreated={(newWs) => {
+          setWorkspaces([...workspaces, newWs]);
+          setWorkspaceBoards({ ...workspaceBoards, [newWs.id]: [] });
+        }}
+      />
     </div>
   );
 };

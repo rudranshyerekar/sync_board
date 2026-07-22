@@ -28,4 +28,10 @@ public class BoardColumn extends BaseEntity {
 
     @Column(nullable = false)
     private Double position;
+
+    @Column
+    private String color;
+
+    @Column(length = 1000)
+    private String description;
 }

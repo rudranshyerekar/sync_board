@@ -65,6 +65,45 @@ export const MainLayout = () => {
               );
             })}
           </nav>
+
+          <div className="mt-8 px-3">
+            <h2 className="text-xs font-bold text-gray-400 mb-3 px-3 uppercase tracking-wider">Your Boards</h2>
+            <nav className="space-y-1">
+              <Link to="/dashboard" className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md bg-blue-50 text-primary group">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded bg-purple-100 border border-purple-200 flex items-center justify-center">
+                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                  </div>
+                  <span className="truncate w-32">Product Launch Plan</span>
+                </div>
+                <button className="opacity-0 group-hover:opacity-100 text-primary hover:text-blue-700">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </Link>
+              <Link to="/dashboard" className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 group">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded bg-blue-50 border border-blue-200 flex items-center justify-center">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                  </div>
+                  <span className="truncate w-32">Website Redesign</span>
+                </div>
+                <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </Link>
+              <Link to="/dashboard" className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 group">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded bg-green-50 border border-green-200 flex items-center justify-center">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  </div>
+                  <span className="truncate w-32">Marketing Q3</span>
+                </div>
+                <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </Link>
+            </nav>
+          </div>
         </div>
         
         {/* User Profile */}

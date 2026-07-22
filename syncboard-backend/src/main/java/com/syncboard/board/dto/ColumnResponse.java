@@ -12,6 +12,8 @@ public class ColumnResponse {
     private Long boardId;
     private String title;
     private Double position;
+    private String color;
+    private String description;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

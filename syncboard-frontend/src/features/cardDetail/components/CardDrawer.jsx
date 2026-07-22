@@ -1,12 +1,12 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { X, AlignLeft, User, Tag, Clock } from 'lucide-react';
+import { X, AlignLeft, User, Tag, Clock, Trash2, AlertCircle } from 'lucide-react';
 import { useBoardStore } from '../../board/state/useBoardStore';
 import { Avatar } from '../../../components/Avatar';
 import { Badge } from '../../../components/Badge';
 import { Button } from '../../../components/Button';
 
 export const CardDrawer = () => {
-  const { board, selectedCardId, setSelectedCard, publishEditStart, publishEditStop, updateCard } = useBoardStore();
+  const { board, selectedCardId, setSelectedCard, publishEditStart, publishEditStop, updateCard, deleteCard } = useBoardStore();
 
   // Find the selected card across all columns
   const card = useMemo(() => {
@@ -22,11 +22,13 @@ export const CardDrawer = () => {
   
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDesc, setEditedDesc] = useState("");
+  const [editedPriority, setEditedPriority] = useState("LOW");
 
   useEffect(() => {
     if (card) {
       setEditedTitle(card.title || "");
       setEditedDesc(card.description || "");
+      setEditedPriority(card.priority || "LOW");
     }
   }, [card]);
 
@@ -45,9 +47,17 @@ export const CardDrawer = () => {
     updateCard(card.id, {
       ...card,
       title: editedTitle,
-      description: editedDesc
+      description: editedDesc,
+      priority: editedPriority
     });
     setSelectedCard(null);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this card?")) {
+      deleteCard(card.id);
+      setSelectedCard(null);
+    }
   };
 
   return (
@@ -138,6 +148,23 @@ export const CardDrawer = () => {
                 <span className="text-sm text-gray-400">No due date</span>
               )}
             </div>
+
+            {/* Priority */}
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-medium mb-2">
+                <AlertCircle className="w-4 h-4" /> Priority
+              </div>
+              <select
+                value={editedPriority}
+                onChange={(e) => setEditedPriority(e.target.value)}
+                className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-md focus:ring-primary focus:border-primary block w-full p-2 outline-none"
+              >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
           </div>
 
           {/* Description */}
@@ -156,9 +183,17 @@ export const CardDrawer = () => {
         </div>
         
         {/* Footer */}
-        <div className="p-4 border-t border-border bg-gray-50 flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setSelectedCard(null)}>Cancel</Button>
-          <Button variant="primary" onClick={handleSave}>Save Changes</Button>
+        <div className="p-4 border-t border-border bg-gray-50 flex justify-between items-center">
+          <button 
+            onClick={handleDelete}
+            className="text-red-500 hover:text-red-700 flex items-center gap-1 text-sm font-medium p-2 rounded hover:bg-red-50 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" /> Delete Card
+          </button>
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={() => setSelectedCard(null)}>Cancel</Button>
+            <Button variant="primary" onClick={handleSave}>Save Changes</Button>
+          </div>
         </div>
       </div>
     </>
