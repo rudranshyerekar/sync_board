@@ -4,10 +4,13 @@ import { MessageSquare, Calendar, CheckCircle2 } from 'lucide-react';
 import { ItemTypes } from '../dnd/ItemTypes';
 import { Avatar } from '../../../components/Avatar';
 import { useBoardStore } from '../state/useBoardStore';
+import { useAuthStore } from '../../auth/state/useAuthStore';
 
 export const CardPreview = ({ card, columnId, index }) => {
   const { setSelectedCard, editingCards, board } = useBoardStore();
+  const currentUser = useAuthStore(state => state.user);
   const editingUser = editingCards[card.id];
+  const isEditingByOther = editingUser && currentUser && editingUser.id !== currentUser.id;
   const isDoneColumn = board?.columns?.find(c => c.id === columnId)?.title?.toLowerCase() === 'done';
   
   const [{ isDragging }, dragRef] = useDrag(() => ({
@@ -45,10 +48,10 @@ export const CardPreview = ({ card, columnId, index }) => {
       onClick={() => setSelectedCard(card.id)}
       className={`relative bg-white p-4 rounded-xl shadow-sm border border-border cursor-grab active:cursor-grabbing hover:border-gray-300 transition-all ${
         isDragging ? 'opacity-50' : 'opacity-100'
-      } ${editingUser ? 'ring-2 ring-blue-400/50' : ''}`}
+      } ${isEditingByOther ? 'ring-2 ring-blue-400/50' : ''}`}
     >
       {/* Editing Indicator Badge */}
-      {editingUser && (
+      {isEditingByOther && (
         <div className="absolute -top-3 -right-2 bg-blue-100 border border-blue-200 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm z-10">
           <Avatar user={editingUser} size="sm" className="w-4 h-4" />
           <span>Editing</span>

@@ -4,7 +4,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Search, Bell, Settings, LayoutDashboard, Filter, MoreVertical, UserPlus, Star, Grid, ArrowRight, MessageSquare, Calendar as CalendarIcon, Edit3 } from 'lucide-react';
 import { useBoardStore } from '../state/useBoardStore';
+import { useAuthStore } from '../../auth/state/useAuthStore';
 import { Column } from './Column';
+import { InviteMemberModal } from '../../workspace/components/InviteMemberModal';
 import { Button } from '../../../components/Button';
 import { Avatar } from '../../../components/Avatar';
 import { CardDrawer } from '../../cardDetail/components/CardDrawer';
@@ -15,10 +17,12 @@ const BoardView = () => {
   const { boardId } = useParams();
   const navigate = useNavigate();
   const { board, isLoading, error, fetchBoard, initRealTimeSync, disconnectRealTimeSync, activeUsers, createColumn, updateBoard, searchQuery, setSearchQuery } = useBoardStore();
+  const currentUser = useAuthStore(state => state.user);
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [isAddingColumn, setIsAddingColumn] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   
   const presenceStatus = usePresenceHeartbeat(boardId);
 
@@ -152,7 +156,10 @@ const BoardView = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors">
+              <button 
+                onClick={() => setIsInviteModalOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors"
+              >
                 <UserPlus className="w-4 h-4" /> Invite
               </button>
               <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 border border-gray-300 bg-white hover:bg-gray-50 rounded-md transition-colors">
@@ -220,7 +227,9 @@ const BoardView = () => {
                         <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${user.status === 'online' ? 'bg-green-500' : user.status === 'idle' ? 'bg-yellow-500' : 'bg-gray-400'}`}></div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 leading-tight">{user.name}</p>
+                        <p className="text-sm font-medium text-gray-900 leading-tight">
+                          {user.name} {currentUser?.id === user.id && '(You)'}
+                        </p>
                         <p className="text-xs text-gray-500 mt-0.5 capitalize">{user.status === 'online' ? 'Viewing board' : user.status}</p>
                       </div>
                     </div>
