@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { boardApi } from '../../../api/boardApi';
 import { cardApi } from '../../../api/cardApi';
 import { wsService } from '../../../api/websocketService';
+import { useNotificationStore } from '../../notifications/state/useNotificationStore';
 
 export const useBoardStore = create((set, get) => ({
   board: null,
@@ -115,6 +116,9 @@ export const useBoardStore = create((set, get) => ({
     });
 
     wsService.connect(token, () => {
+      // 0. Subscribe to personal notification queue (requires authenticated WS connection)
+      useNotificationStore.getState().initNotificationSync();
+
       // 1. Subscribe to Presence
       wsService.subscribe(`/topic/board/${boardId}/presence`, (message) => {
         if (message.type === 'PRESENCE_UPDATE') {

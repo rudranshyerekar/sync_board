@@ -6,6 +6,7 @@ import { Button } from '../../../components/Button';
 import { workspaceApi } from '../../../api/workspaceApi';
 import { boardApi } from '../../../api/boardApi';
 import { useAuthStore } from '../../auth/state/useAuthStore';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 import { InviteMemberModal } from './InviteMemberModal';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal';
 
@@ -87,6 +88,7 @@ const DashboardView = () => {
               className="pl-9 pr-4 py-1.5 border border-gray-300 rounded-md text-sm w-64 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
+          <NotificationBell />
           <Button variant="secondary" className="flex items-center gap-2 py-1.5 text-sm text-gray-700">
             <Filter className="w-4 h-4" /> Filter
           </Button>

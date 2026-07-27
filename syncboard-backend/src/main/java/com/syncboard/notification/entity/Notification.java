@@ -34,6 +34,13 @@ public class Notification extends BaseEntity {
     private NotificationType type;
 
     @Column(name = "is_read", nullable = false)
-    private boolean isRead;
+    private boolean read;
+
+    /**
+     * The ID of the entity that triggered this notification (e.g. cardId).
+     * Used by the frontend to deep-link to the relevant card.
+     */
+    @Column(name = "reference_id")
+    private Long referenceId;
 
 }

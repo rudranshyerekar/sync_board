@@ -29,5 +29,10 @@ export const workspaceApi = {
   removeMember: async (workspaceId, userId) => {
     const response = await httpClient.delete(`/workspaces/${workspaceId}/members/${userId}`);
     return response.data;
-  }
+  },
+
+  getMembers: async (workspaceId) => {
+    const response = await httpClient.get(`/workspaces/${workspaceId}/members`);
+    return response.data;
+  },
 };
