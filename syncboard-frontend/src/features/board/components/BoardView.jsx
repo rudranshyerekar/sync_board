@@ -12,6 +12,7 @@ import { Avatar } from '../../../components/Avatar';
 import { CardDrawer } from '../../cardDetail/components/CardDrawer';
 import { CreateColumnModal } from './CreateColumnModal';
 import { usePresenceHeartbeat } from '../hooks/usePresenceHeartbeat';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 
 const BoardView = () => {
   const { boardId } = useParams();
@@ -87,10 +88,7 @@ const BoardView = () => {
                   className="pl-9 pr-4 py-1.5 border border-gray-200 bg-gray-50 rounded-full text-sm w-64 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white transition-colors"
                 />
               </div>
-              <button className="text-gray-500 hover:text-gray-700 relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-              </button>
+              <NotificationBell />
               <button className="text-gray-500 hover:text-gray-700">
                 <Settings className="w-5 h-5" />
               </button>

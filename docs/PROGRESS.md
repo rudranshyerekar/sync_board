@@ -3,7 +3,7 @@
 
 **Purpose:** This is the single file an AI (or new developer) should read first to understand where the project stands without re-analyzing the entire codebase. Update this file after every significant implementation milestone.
 
-**Last Updated:** 2026-07-22
+**Last Updated:** 2026-07-25
 
 ---
 
@@ -13,7 +13,7 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ---
 
-## Current Phase: Phase 5 — Comments + Notifications
+## Current Phase: Phase 6 — Activity + Hardening
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -22,8 +22,8 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 | Phase 2 — Frontend & Backend Integration | ✅ Complete | Full REST integration, Session restoration, DTO alignment, Aggregated `/api/boards/{id}/full` API |
 | Phase 3 — WebSocket Card Sync | ✅ Complete | STOMP server message broker (`WebSocketConfig`), client STOMP subscriptions, live card moves |
 | Phase 4 — Presence + Editing | ✅ Complete | Heartbeat, online/offline status, soft-lock card indicators |
-| Phase 5 — Comments + Notifications | 🚧 In Progress | Live comments thread, notifications dispatcher |
-| Phase 6 — Activity + Hardening | ⬜ Not Started | Activity feed audit, permission polish, concurrency hardening |
+| Phase 5 — Comments + Notifications | ✅ Complete | Live comments thread, @mention parsing, typing indicators, notifications dispatcher & bell UI |
+| Phase 6 — Activity + Hardening | 🚧 In Progress | Activity feed audit, permission polish, concurrency hardening |
 | Phase 7 — Docker + Tests + Deploy | ⬜ Not Started | Dockerfiles, unit/integration testing, deployment docs |
 
 **Status Legend:** ⬜ Not Started | 🚧 In Progress | ✅ Complete | ⏸️ Paused
@@ -97,13 +97,26 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 | # | Issue | Impact | File Location / Reference |
 |---|-------|--------|---------------------------|
-| 1 | **Unimplemented Backend Domain Services (Presence, Comments, Activity, Notifications)** | Critical | `com.syncboard.presence`, `com.syncboard.comment`, `com.syncboard.activity`, `com.syncboard.notification` |
-| 4 | **Card Priority Selector Missing in Drawer UI** | Medium | `syncboard-frontend/src/features/cardDetail/components/CardDrawer.jsx` |
 | 5 | **Mobile Responsive Sidebar Menu Missing (< 768px)** | Medium | `syncboard-frontend/src/app/layout/MainLayout.jsx` |
 
 ---
 
 ## Recent Changes (Reverse Chronological)
+
+### 2026-07-25
+- **Phase 5 Comments + Notifications — Full Implementation:**
+- **Backend — Comment Module:** Implemented `CommentRepository`, `CommentRequest/Response` DTOs, `CommentService` (post, get, delete, @mention parsing, STOMP broadcast to `/topic/card/{cardId}/comments`), `CommentRestController` (`POST/GET /api/cards/{cardId}/comments`, `DELETE /api/comments/{commentId}`), `CommentWebSocketController` (ephemeral typing relay to `/topic/card/{cardId}/typing`).
+- **Backend — Notification Module:** Extended `Notification.java` with `referenceId` field for deep-linking. Implemented `NotificationRepository`, `NotificationResponse` DTO, `NotificationService` (persist + live delivery via `/user/queue/notifications`), `NotificationRestController` (`GET /api/notifications`, `PATCH /{id}/read`, `POST /read-all`, `GET /unread-count`).
+- **Backend — Assignment Notifications:** Wired `NotificationService` into `CardService.updateCard()` to fire `ASSIGNMENT` notification when a card's assignee changes.
+- **Backend — Mention Parsing:** `CommentService.processMentions()` parses `@emailPrefix` patterns and delivers `MENTION` notifications to matched workspace members via `NotificationService`.
+- **Backend — UserRepository:** Added `findByEmailStartingWithIgnoreCase()` for efficient @mention lookup.
+- **pom.xml Fix:** Pinned Lombok to `1.18.38` and updated `java.version` to `21` to resolve Lombok `TypeTag::UNKNOWN` crash on JDK 25.
+- **Frontend — Comment API & Store:** Created `commentApi.js`, `useCommentStore.js` (Zustand store with STOMP subscriptions for comment events and typing indicators, auto-stop typing after 3s).
+- **Frontend — Notification API & Store:** Created `notificationApi.js`, `useNotificationStore.js` (Zustand store with live STOMP `/user/queue/notifications` subscription, unread count tracking).
+- **Frontend — Notification UI:** Created `NotificationBell.jsx` (bell icon with red unread badge, outside-click close) and `NotificationPanel.jsx` (dropdown with type icons, relative timestamps, mark-as-read, mark-all-read).
+- **Frontend — CardDrawer:** Replaced with full live comment thread — author avatars, `@mention` highlight rendering, typing indicator dots animation, auto-scroll to latest, delete-own-comment, and `Enter` to send.
+- **Frontend — MainLayout:** Added `<NotificationBell />` to sidebar header, initialized `fetchNotifications()` and `initNotificationSync()` on mount.
+- **Build Verification:** Backend `mvn clean compile` → `BUILD SUCCESS` (79 files, release 21). Frontend `npm run build` → `BUILD SUCCESS` (2030 modules, 980ms).
 
 ### 2026-07-22
 - **Phase 3 Real-Time WebSocket Integration:** Successfully replaced the frontend's mock WebSocket service with a real SockJS + STOMP client using `@stomp/stompjs`. 

@@ -65,7 +65,21 @@ public class WorkspaceService {
         Workspace workspace = getWorkspaceIfMember(workspaceId, currentUserEmail);
         return mapToResponse(workspace);
     }
-    
+
+    public List<com.syncboard.user.dto.UserResponse> getMembers(Long workspaceId, String currentUserEmail) {
+        Workspace workspace = getWorkspaceIfMember(workspaceId, currentUserEmail);
+        return workspaceMemberRepository.findByWorkspaceId(workspace.getId())
+                .stream()
+                .map(m -> com.syncboard.user.dto.UserResponse.builder()
+                        .id(m.getUser().getId())
+                        .name(m.getUser().getName())
+                        .email(m.getUser().getEmail())
+                        .avatarUrl(m.getUser().getAvatarUrl())
+                        .presenceStatus(m.getUser().getPresenceStatus())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void inviteMember(Long workspaceId, InviteMemberRequest request, String currentUserEmail) {
         Workspace workspace = getWorkspaceIfMember(workspaceId, currentUserEmail);

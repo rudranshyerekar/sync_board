@@ -4,14 +4,19 @@ import com.syncboard.board.entity.BoardColumn;
 import com.syncboard.board.repository.BoardColumnRepository;
 import com.syncboard.common.exception.BadRequestException;
 import com.syncboard.common.exception.ResourceNotFoundException;
+import com.syncboard.notification.entity.NotificationType;
+import com.syncboard.notification.service.NotificationService;
 import com.syncboard.user.entity.User;
 import com.syncboard.user.repository.UserRepository;
 import com.syncboard.workspace.repository.WorkspaceMemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import com.syncboard.card.entity.Card;
 import com.syncboard.card.entity.CardPriority;
@@ -29,6 +34,20 @@ public class CardService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
 
+    // Setter injection with @Lazy to break the circular dependency with NotificationService
+    private NotificationService notificationService;
+
+    @Autowired
+    public void setNotificationService(@Lazy NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+    /** Look up workspaceId via single JPQL query — avoids navigating lazy proxies */
+    private Long getWorkspaceId(Long cardId) {
+        return cardRepository.findWorkspaceIdByCardId(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
+    }
+
     @Transactional
     public CardResponse createCard(Long columnId, CardRequest request, String currentUserEmail) {
         BoardColumn column = boardColumnRepository.findById(columnId)
@@ -39,7 +58,7 @@ public class CardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
-        
+
         User assignee = null;
         if (request.getAssigneeId() != null) {
             assignee = userRepository.findById(request.getAssigneeId())
@@ -77,13 +96,12 @@ public class CardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
-        Long workspaceId = card.getColumn().getBoard().getWorkspace().getId();
+        Long workspaceId = getWorkspaceId(cardId);
 
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
 
-        // Entity version check for optimistic locking
         if (request.getVersion() != null && !request.getVersion().equals(card.getVersion())) {
             throw new org.springframework.orm.ObjectOptimisticLockingFailureException(Card.class, "Stale record");
         }
@@ -99,11 +117,20 @@ public class CardService {
         if (request.getDeadline() != null) {
             card.setDeadline(request.getDeadline());
         }
+
+        User previousAssignee = card.getAssignee();
         if (request.getAssigneeId() != null) {
             User assignee = userRepository.findById(request.getAssigneeId()).orElseThrow();
             card.setAssignee(assignee);
+            boolean assigneeChanged = previousAssignee == null ||
+                    !Objects.equals(previousAssignee.getId(), assignee.getId());
+            if (assigneeChanged && !assignee.getEmail().equals(user.getEmail())) {
+                String msg = String.format("%s assigned you to card \"%s\"",
+                        user.getName(), card.getTitle());
+                notificationService.createAndDeliver(assignee, NotificationType.ASSIGNMENT, msg, card.getId());
+            }
         } else {
-            card.setAssignee(null); // Clear assignee if explicitly null
+            card.setAssignee(null);
         }
 
         return mapToResponse(cardRepository.save(card));
@@ -114,27 +141,27 @@ public class CardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(card.getColumn().getBoard().getWorkspace().getId(), user.getId())) {
+        Long workspaceId = getWorkspaceId(cardId);
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
-
         cardRepository.delete(card);
     }
-    
-    // For drag-and-drop between columns
+
     @Transactional
     public CardResponse moveCard(Long cardId, Long targetColumnId, Double targetPosition, String currentUserEmail) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(card.getColumn().getBoard().getWorkspace().getId(), user.getId())) {
+        Long workspaceId = getWorkspaceId(cardId);
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
-        
+
         BoardColumn targetColumn = boardColumnRepository.findById(targetColumnId).orElseThrow();
         card.setColumn(targetColumn);
         card.setPosition(targetPosition);
-        
+
         return mapToResponse(cardRepository.save(card));
     }
 

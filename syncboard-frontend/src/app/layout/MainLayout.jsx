@@ -1,19 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings, LogOut } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
 import { useAuthStore } from '../../features/auth/state/useAuthStore';
+import { useNotificationStore } from '../../features/notifications/state/useNotificationStore';
+import { useBoardStore } from '../../features/board/state/useBoardStore';
 
 export const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { fetchNotifications } = useNotificationStore();
+  const { board } = useBoardStore();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
+
+  // Fetch initial notification count on mount (HTTP — does not need WS)
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const navItems = [
     { name: 'Boards', icon: LayoutDashboard, path: '/dashboard' },
@@ -27,18 +36,21 @@ export const MainLayout = () => {
 
   return (
     <div className="h-screen bg-bg-primary flex overflow-hidden font-sans">
-      
+
       {/* Global Left Sidebar */}
       <aside className="w-64 border-r border-border bg-white flex flex-col justify-between hidden md:flex flex-shrink-0">
         <div>
-          <div className="p-5 flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-lg">S</div>
-            <div>
-              <h1 className="font-bold text-gray-900 leading-tight">SyncBoard</h1>
-              <p className="text-xs text-gray-500">Real-time. Together.</p>
+          {/* Logo + New Board */}
+          <div className="p-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-lg">S</div>
+              <div>
+                <h1 className="font-bold text-gray-900 leading-tight">SyncBoard</h1>
+                <p className="text-xs text-gray-500">Real-time. Together.</p>
+              </div>
             </div>
           </div>
-          
+
           <div className="px-4 mb-4">
             <Link to="/b/create">
               <Button variant="primary" className="w-full flex items-center justify-center gap-2 py-2.5">
@@ -55,8 +67,8 @@ export const MainLayout = () => {
                   key={item.name}
                   to={item.path}
                   className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive 
-                      ? 'bg-blue-50 text-primary' 
+                    isActive
+                      ? 'bg-blue-50 text-primary'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
@@ -105,7 +117,7 @@ export const MainLayout = () => {
             </nav>
           </div>
         </div>
-        
+
         {/* User Profile */}
         <div className="p-4 border-t border-border">
           <div className="flex items-center justify-between p-2 -mx-2 rounded-md hover:bg-gray-50 transition-colors">
@@ -116,7 +128,7 @@ export const MainLayout = () => {
                 <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={handleLogout}
               className="text-gray-400 hover:text-red-500 p-1.5 rounded-md hover:bg-red-50 transition-colors"
               title="Logout"
@@ -127,7 +139,7 @@ export const MainLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content Area (Dashboard, Board, etc. will render here) */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg-primary">
         <Outlet />
       </div>

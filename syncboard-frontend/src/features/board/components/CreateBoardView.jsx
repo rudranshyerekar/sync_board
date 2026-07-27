@@ -5,6 +5,8 @@ import { Button } from '../../../components/Button';
 import { Avatar } from '../../../components/Avatar';
 import { workspaceApi } from '../../../api/workspaceApi';
 import { boardApi } from '../../../api/boardApi';
+import { useAuthStore } from '../../auth/state/useAuthStore';
+import { NotificationBell } from '../../notifications/components/NotificationBell';
 
 const CreateBoardView = () => {
   const navigate = useNavigate();
@@ -84,10 +86,7 @@ const CreateBoardView = () => {
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 border border-gray-200 rounded px-1">⌘K</span>
           </div>
-          <button className="text-gray-500 hover:text-gray-700 relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
+          <NotificationBell />
           <button className="text-gray-500 hover:text-gray-700 ml-1">
             <HelpCircle className="w-5 h-5" />
           </button>
