@@ -203,6 +203,7 @@ public class CardService {
                 .deadline(card.getDeadline())
                 .position(card.getPosition())
                 .version(card.getVersion())
+                .commentCount(card.getCommentCount() != null ? card.getCommentCount() : 0)
                 .createdAt(card.getCreatedAt())
                 .updatedAt(card.getUpdatedAt())
                 .build();
