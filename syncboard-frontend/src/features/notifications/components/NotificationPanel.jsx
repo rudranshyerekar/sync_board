@@ -44,10 +44,12 @@ export const NotificationPanel = ({ onClose }) => {
       await markAsRead(notification.id);
     }
     // Deep-link to the referenced card if available
-    if (notification.referenceId) {
+    if (notification.referenceId && notification.boardId) {
       onClose();
-      // Navigate to board — CardDrawer will be opened by user from board
-      // This is a best-effort link without knowing the boardId at this point
+      navigate(`/b/${notification.boardId}?cardId=${notification.referenceId}`);
+    } else if (notification.boardId) {
+      onClose();
+      navigate(`/b/${notification.boardId}`);
     }
   };
 

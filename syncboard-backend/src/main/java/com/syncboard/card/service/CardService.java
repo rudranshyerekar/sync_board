@@ -127,7 +127,7 @@ public class CardService {
             if (assigneeChanged && !assignee.getEmail().equals(user.getEmail())) {
                 String msg = String.format("%s assigned you to card \"%s\"",
                         user.getName(), card.getTitle());
-                notificationService.createAndDeliver(assignee, NotificationType.ASSIGNMENT, msg, card.getId());
+                notificationService.createAndDeliver(assignee, NotificationType.ASSIGNMENT, msg, card.getId(), card.getColumn().getBoard().getId());
             }
         } else {
             card.setAssignee(null);
@@ -161,6 +161,15 @@ public class CardService {
         BoardColumn targetColumn = boardColumnRepository.findById(targetColumnId).orElseThrow();
         card.setColumn(targetColumn);
         card.setPosition(targetPosition);
+
+        // Completion notification
+        String targetTitle = targetColumn.getTitle().toLowerCase();
+        if (targetTitle.contains("done") || targetTitle.contains("complet")) {
+            if (card.getAssignee() != null && !card.getAssignee().getEmail().equals(user.getEmail())) {
+                String msg = String.format("%s moved \"%s\" to %s", user.getName(), card.getTitle(), targetColumn.getTitle());
+                notificationService.createAndDeliver(card.getAssignee(), NotificationType.COMPLETION, msg, card.getId(), targetColumn.getBoard().getId());
+            }
+        }
 
         return mapToResponse(cardRepository.save(card));
     }

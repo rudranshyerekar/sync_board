@@ -43,4 +43,11 @@ public class Notification extends BaseEntity {
     @Column(name = "reference_id")
     private Long referenceId;
 
+    /**
+     * The ID of the board context for this notification.
+     * Used by the frontend to deep-link to the relevant board.
+     */
+    @Column(name = "board_id")
+    private Long boardId;
+
 }
