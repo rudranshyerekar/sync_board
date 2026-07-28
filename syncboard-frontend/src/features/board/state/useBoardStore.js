@@ -91,7 +91,11 @@ export const useBoardStore = create((set, get) => ({
       }
     } catch (err) {
       console.error("Failed to update card:", err);
-      alert("Failed to update card. Changes have been reverted.");
+      if (err.response?.status === 409) {
+        alert("⚠️ Concurrency Conflict: Someone else modified this card! Your changes could not be applied. Reloading latest board state...");
+      } else {
+        alert("Failed to update card. Changes have been reverted.");
+      }
       get().fetchBoard(get().board?.id);
     }
   },
@@ -226,7 +230,11 @@ export const useBoardStore = create((set, get) => ({
       // get().fetchBoard(get().board.id);
     } catch (err) {
       console.error("Failed to sync card move:", err);
-      alert("Failed to move card. Changes have been reverted.");
+      if (err.response?.status === 409) {
+        alert("⚠️ Concurrency Conflict: Someone else moved or edited this card! Reloading latest board state...");
+      } else {
+        alert("Failed to move card. Changes have been reverted.");
+      }
       // Trigger a re-fetch to repair state on failure
       get().fetchBoard(get().board?.id);
     }

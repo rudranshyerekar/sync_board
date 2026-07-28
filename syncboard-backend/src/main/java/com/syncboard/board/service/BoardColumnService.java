@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import com.syncboard.activity.service.ActivityService;
 import com.syncboard.board.entity.Board;
 import com.syncboard.board.entity.BoardColumn;
 import com.syncboard.board.repository.BoardColumnRepository;
@@ -27,6 +28,7 @@ public class BoardColumnService {
     private final BoardRepository boardRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     @Transactional
     public ColumnResponse createColumn(Long boardId, ColumnRequest request, String currentUserEmail) {
@@ -47,7 +49,10 @@ public class BoardColumnService {
                 .position(request.getPosition() != null ? request.getPosition() : computeNextPosition(boardId))
                 .build();
 
-        return mapToResponse(boardColumnRepository.save(column));
+        BoardColumn savedColumn = boardColumnRepository.save(column);
+        activityService.logActivity(board.getWorkspace(), user, "Created column", "Created column \"" + savedColumn.getTitle() + "\" in board \"" + board.getTitle() + "\"");
+
+        return mapToResponse(savedColumn);
     }
 
     public List<ColumnResponse> getColumns(Long boardId, String currentUserEmail) {
@@ -84,7 +89,10 @@ public class BoardColumnService {
             column.setDescription(request.getDescription());
         }
 
-        return mapToResponse(boardColumnRepository.save(column));
+        BoardColumn updatedColumn = boardColumnRepository.save(column);
+        activityService.logActivity(board.getWorkspace(), user, "Updated column", "Updated column \"" + updatedColumn.getTitle() + "\" in board \"" + board.getTitle() + "\"");
+
+        return mapToResponse(updatedColumn);
     }
 
     @Transactional
@@ -97,6 +105,7 @@ public class BoardColumnService {
         }
 
         boardColumnRepository.delete(column);
+        activityService.logActivity(column.getBoard().getWorkspace(), user, "Deleted column", "Deleted column \"" + column.getTitle() + "\" from board \"" + column.getBoard().getTitle() + "\"");
     }
 
     private Double computeNextPosition(Long boardId) {

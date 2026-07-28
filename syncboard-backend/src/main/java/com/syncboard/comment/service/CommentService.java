@@ -13,6 +13,7 @@ import com.syncboard.user.dto.UserResponse;
 import com.syncboard.user.entity.User;
 import com.syncboard.user.repository.UserRepository;
 import com.syncboard.workspace.repository.WorkspaceMemberRepository;
+import com.syncboard.activity.service.ActivityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -38,6 +39,7 @@ public class CommentService {
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ActivityService activityService;
 
     // Matches @emailPrefix — e.g. "@alice" in a comment links to alice@...
     private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+)");
@@ -79,6 +81,8 @@ public class CommentService {
         // Process @mentions and fire notifications
         processMentions(content, author, card, workspaceId, cardId);
 
+        activityService.logActivity(card.getColumn().getBoard().getWorkspace(), author, "Added comment", "Commented on card \"" + card.getTitle() + "\"");
+
         return response;
     }
 
@@ -109,6 +113,7 @@ public class CommentService {
         }
 
         Long cardId = comment.getCard().getId();
+        activityService.logActivity(comment.getCard().getColumn().getBoard().getWorkspace(), comment.getAuthor(), "Deleted comment", "Deleted a comment on card \"" + comment.getCard().getTitle() + "\"");
         commentRepository.delete(comment);
 
         // Broadcast deletion so live viewers remove the comment from UI

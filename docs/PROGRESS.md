@@ -13,7 +13,7 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 
 ---
 
-## Current Phase: Phase 6 — Activity + Hardening
+## Current Phase: 🚀 All Phases Complete! (Production & Portfolio Ready)
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -23,8 +23,8 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 | Phase 3 — WebSocket Card Sync | ✅ Complete | STOMP server message broker (`WebSocketConfig`), client STOMP subscriptions, live card moves |
 | Phase 4 — Presence + Editing | ✅ Complete | Heartbeat, online/offline status, soft-lock card indicators |
 | Phase 5 — Comments + Notifications | ✅ Complete | Live comments thread, @mention parsing, typing indicators, notifications dispatcher & bell UI |
-| Phase 6 — Activity + Hardening | 🚧 In Progress | Activity feed audit, permission polish, concurrency hardening |
-| Phase 7 — Docker + Tests + Deploy | ⬜ Not Started | Dockerfiles, unit/integration testing, deployment docs |
+| Phase 6 — Activity + Hardening | ✅ Complete | Activity feed audit & logging, RBAC permission component, concurrency error refinement |
+| Phase 7 — Docker + Tests + Deploy | ✅ Complete | Multi-stage Dockerfiles, Docker Compose, Nginx proxy, Spring Boot unit/concurrency test suites |
 
 **Status Legend:** ⬜ Not Started | 🚧 In Progress | ✅ Complete | ⏸️ Paused
 
@@ -117,6 +117,25 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 - **Frontend — CardDrawer:** Replaced with full live comment thread — author avatars, `@mention` highlight rendering, typing indicator dots animation, auto-scroll to latest, delete-own-comment, and `Enter` to send.
 - **Frontend — MainLayout:** Added `<NotificationBell />` to sidebar header, initialized `fetchNotifications()` and `initNotificationSync()` on mount.
 - **Build Verification:** Backend `mvn clean compile` → `BUILD SUCCESS` (79 files, release 21). Frontend `npm run build` → `BUILD SUCCESS` (2030 modules, 980ms).
+
+### 2026-07-28
+- **Phase 6 Activity Logging & Hardening:** Completed comprehensive activity trail and concurrency polish.
+  - Added event logging to `BoardColumnService.java` (create, update, delete column) and `WorkspaceService.java` (invite member, update role, remove member) via constructor injection of `ActivityService`.
+  - Created `WorkspaceSecurity.java` (`@workspaceSecurity` bean) to handle RBAC role evaluations (`isMember`, `isAdminOrOwner`) referenced in `@PreAuthorize` security annotations.
+  - Refined optimistic locking exception handling in `GlobalExceptionHandler.java` (catching both JPA and Hibernate stale state exceptions) and added descriptive 409 conflict handling in `useBoardStore.js` with state reload.
+  - Updated frontend `ActivityView.jsx` with dynamic workspace selection via `workspaceApi.getMyWorkspaces()` and a workspace switcher dropdown.
+- **Phase 7 Dockerization & Deployment:** Engineered a complete production container stack.
+  - Created multi-stage `Dockerfile` for `syncboard-backend` utilizing Eclipse Temurin JDK 21 & Maven offline caching.
+  - Created multi-stage `Dockerfile` and SPA/reverse-proxy `nginx.conf` for `syncboard-frontend`, routing REST API and STOMP WebSockets to backend.
+  - Formulated root `docker-compose.yml` orchestrating containers while linking to the host's native MySQL instance via `host.docker.internal:host-gateway`.
+- **Phase 7 Quality Verification & Testing:** Built dedicated unit testing suites for core algorithmic & security risks.
+  - Created `OptimisticLockingTest.java`, `PositionRecalculationTest.java`, and `WorkspaceSecurityTest.java` using JUnit 5 and Mockito.
+  - Configured `maven-surefire-plugin` with `-Dnet.bytebuddy.experimental=true` for JDK 25 Byte Buddy mock compatibility. Verified frontend production bundling via `vite build` (~3.98s clean build).
+- **Final Frontend UI Completion & Polish:** Eliminated static mock items and added missing menu routes.
+  - Replaced hard-coded mock board links in `MainLayout.jsx` with dynamic live workspace board fetching (`workspaceApi` + `boardApi`), featuring active route badges and direct navigation to `/b/{boardId}`.
+  - Built `MyTasksView.jsx` (`/tasks`) displaying a filterable table of tasks across workspaces with priority tags and deadline indicators.
+  - Built `CalendarView.jsx` (`/calendar`) rendering an interactive monthly itinerary grid plotting card milestones.
+  - Built `SettingsView.jsx` (`/settings`) enabling workspace team member administration, role modification (`OWNER`/`ADMIN`/`MEMBER`), member invites, and profile credential review.
 
 ### 2026-07-22
 - **Phase 3 Real-Time WebSocket Integration:** Successfully replaced the frontend's mock WebSocket service with a real SockJS + STOMP client using `@stomp/stompjs`. 

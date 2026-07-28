@@ -130,12 +130,12 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** The system feels complete, auditable, and safe under real concurrent use — not just functional in a happy-path demo.
 
 **Tasks:**
-- [ ] Implement the Activity entity and ensure every durable state-changing action (card moved, created, deleted; comment added; member joined; priority changed) generates a readable activity entry.
-- [ ] Build the Activity Feed UI, paginated, readable as a human-facing log rather than raw event data.
-- [ ] Re-audit every endpoint and STOMP handler against the Pre-Merge Self-Checklist in Rules.md §12 — especially authorization scoping and version checks.
-- [ ] Improve the conflict-resolution UX for optimistic concurrency rejections (e.g., a clearer "someone else changed this — here's what changed" message rather than a generic error).
-- [ ] Stress-test with rapid repeated actions (fast repeated drags, rapid comment posting) to confirm ordering and correctness hold up.
-- [ ] Confirm role enforcement (Owner/Admin/Member) is checked server-side for every relevant action, not just hidden in the UI.
+- [x] Implement the Activity entity and ensure every durable state-changing action (card moved, created, deleted; comment added; member joined; priority changed) generates a readable activity entry.
+- [x] Build the Activity Feed UI, paginated, readable as a human-facing log rather than raw event data.
+- [x] Re-audit every endpoint and STOMP handler against the Pre-Merge Self-Checklist in Rules.md §12 — especially authorization scoping and version checks.
+- [x] Improve the conflict-resolution UX for optimistic concurrency rejections (e.g., a clearer "someone else changed this — here's what changed" message rather than a generic error).
+- [x] Stress-test with rapid repeated actions (fast repeated drags, rapid comment posting) to confirm ordering and correctness hold up.
+- [x] Confirm role enforcement (Owner/Admin/Member) is checked server-side for every relevant action, not just hidden in the UI.
 
 **Done when:** you can hand the app to someone else, have them deliberately try to break it (rapid actions, simultaneous edits, removing a member mid-session), and the system degrades gracefully rather than corrupting state or crashing.
 
@@ -148,13 +148,13 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** A polished, shippable, explainable project.
 
 **Tasks:**
-- [ ] Write Dockerfiles for backend and frontend, and optionally a `docker-compose.yml` for containerized deployment (the MySQL database runs locally on the host, not in Docker).
-- [ ] Verify the entire stack starts from a single `docker compose up` on a clean machine/environment.
-- [ ] Write backend unit tests for the highest-risk logic: optimistic concurrency checks, position recalculation, permission checks.
-- [ ] Write at least a handful of WebSocket/STOMP integration tests simulating two connected clients.
-- [ ] Set up production-profile configuration (env-driven secrets, restricted CORS).
-- [ ] Deploy to a single-instance host of your choice.
-- [ ] Write a README covering: what the project is, the architecture at a glance, how to run it locally, and a short "design decisions" section (soft-lock vs. optimistic concurrency, heartbeat-based presence, reconnect-and-resync) that doubles as interview talking points.
+- [x] Write Dockerfiles for backend and frontend, and optionally a `docker-compose.yml` for containerized deployment (the MySQL database runs locally on the host, not in Docker).
+- [x] Verify the entire stack starts from a single `docker compose up` on a clean machine/environment.
+- [x] Write backend unit tests for the highest-risk logic: optimistic concurrency checks, position recalculation, permission checks.
+- [x] Write at least a handful of WebSocket/STOMP integration tests simulating two connected clients.
+- [x] Set up production-profile configuration (env-driven secrets, restricted CORS).
+- [x] Deploy to a single-instance host of your choice.
+- [x] Write a README covering: what the project is, the architecture at a glance, how to run it locally, and a short "design decisions" section (soft-lock vs. optimistic concurrency, heartbeat-based presence, reconnect-and-resync) that doubles as interview talking points.
 
 **Done when:** a stranger could clone the repository, run one command, and have a working local instance — and could read the README and understand not just what the app does, but why it's built the way it is.
 
