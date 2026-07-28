@@ -91,10 +91,10 @@ export const CardPreview = ({ card, columnId, index }) => {
             </div>
           ) : (
             <>
-              {card.comments > 0 && (
+              {(card.commentCount > 0 || card.comments > 0) && (
                 <div className="flex items-center gap-1 hover:text-gray-600">
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>{card.comments}</span>
+                  <span>{card.commentCount ?? card.comments}</span>
                 </div>
               )}
               {(card.deadline || card.date) && (

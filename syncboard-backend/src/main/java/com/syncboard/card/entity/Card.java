@@ -51,4 +51,7 @@ public class Card extends BaseEntity {
 
     @Version
     private Long version;
+
+    @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM comment c WHERE c.card_id = id)")
+    private Integer commentCount;
 }

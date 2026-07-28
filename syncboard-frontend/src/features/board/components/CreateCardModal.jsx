@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, FileText, User, Flag, Calendar, Hash, Info, Settings } from 'lucide-react';
 import { Button } from '../../../components/Button';
 import { useBoardStore } from '../state/useBoardStore';
+import { workspaceApi } from '../../../api/workspaceApi';
 
 export const CreateCardModal = ({ isOpen, onClose, column }) => {
-  const { createCard } = useBoardStore();
+  const { createCard, board } = useBoardStore();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -13,6 +14,13 @@ export const CreateCardModal = ({ isOpen, onClose, column }) => {
   const [deadline, setDeadline] = useState('');
   const [position, setPosition] = useState('');
   const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    if (board?.workspaceId) {
+      workspaceApi.getMembers(board.workspaceId).then(setMembers).catch(console.error);
+    }
+  }, [board?.workspaceId]);
 
   if (!isOpen) return null;
 
@@ -133,6 +141,11 @@ export const CreateCardModal = ({ isOpen, onClose, column }) => {
                       className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-gray-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm appearance-none bg-white"
                     >
                       <option value="">Select assignee</option>
+                      {members.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.email})
+                        </option>
+                      ))}
                     </select>
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <svg className="w-4 h-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">

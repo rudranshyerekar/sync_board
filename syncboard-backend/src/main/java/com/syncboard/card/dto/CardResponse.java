@@ -21,6 +21,7 @@ public class CardResponse {
     private LocalDateTime deadline;
     private Double position;
     private Long version;
+    private Integer commentCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

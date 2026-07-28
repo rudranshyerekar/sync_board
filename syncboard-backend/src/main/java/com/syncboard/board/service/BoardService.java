@@ -58,12 +58,13 @@ public class BoardService {
 
         Board savedBoard = boardRepository.save(board);
 
-        // Create default columns
-        BoardColumn todo = BoardColumn.builder().board(savedBoard).title("To Do").position(1000.0).build();
-        BoardColumn inProgress = BoardColumn.builder().board(savedBoard).title("In Progress").position(2000.0).build();
-        BoardColumn done = BoardColumn.builder().board(savedBoard).title("Done").position(3000.0).build();
+        // Create default columns with colors
+        BoardColumn todo = BoardColumn.builder().board(savedBoard).title("To Do").position(1000.0).color("gray").build();
+        BoardColumn inProgress = BoardColumn.builder().board(savedBoard).title("In Progress").position(2000.0).color("yellow").build();
+        BoardColumn review = BoardColumn.builder().board(savedBoard).title("Review").position(3000.0).color("blue").build();
+        BoardColumn done = BoardColumn.builder().board(savedBoard).title("Done").position(4000.0).color("green").build();
         
-        boardColumnRepository.saveAll(java.util.Arrays.asList(todo, inProgress, done));
+        boardColumnRepository.saveAll(java.util.Arrays.asList(todo, inProgress, review, done));
 
         activityService.logActivity(workspace, user, "Created board", "Created board \"" + savedBoard.getTitle() + "\"");
 
@@ -154,6 +155,7 @@ public class BoardService {
                 .deadline(card.getDeadline())
                 .position(card.getPosition())
                 .version(card.getVersion())
+                .commentCount(card.getCommentCount() != null ? card.getCommentCount() : 0)
                 .createdAt(card.getCreatedAt())
                 .updatedAt(card.getUpdatedAt())
                 .build();
