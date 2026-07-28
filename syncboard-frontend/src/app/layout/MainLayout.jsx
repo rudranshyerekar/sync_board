@@ -5,24 +5,26 @@ import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
 import { useAuthStore } from '../../features/auth/state/useAuthStore';
 import { useNotificationStore } from '../../features/notifications/state/useNotificationStore';
-import { useBoardStore } from '../../features/board/state/useBoardStore';
+import { useWorkspaceStore } from '../../features/workspace/state/useWorkspaceStore';
 
 export const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { fetchNotifications } = useNotificationStore();
-  const { board } = useBoardStore();
+  const { getAllBoards, fetchData } = useWorkspaceStore();
+  const allBoards = getAllBoards();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  // Fetch initial notification count on mount (HTTP — does not need WS)
+  // Fetch initial notification count and workspaces on mount
   useEffect(() => {
     fetchNotifications();
-  }, []);
+    fetchData();
+  }, [fetchNotifications, fetchData]);
 
   const navItems = [
     { name: 'Boards', icon: LayoutDashboard, path: '/dashboard' },
@@ -81,39 +83,28 @@ export const MainLayout = () => {
           <div className="mt-8 px-3">
             <h2 className="text-xs font-bold text-gray-400 mb-3 px-3 uppercase tracking-wider">Your Boards</h2>
             <nav className="space-y-1">
-              <Link to="/dashboard" className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md bg-blue-50 text-primary group">
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded bg-purple-100 border border-purple-200 flex items-center justify-center">
-                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                  </div>
-                  <span className="truncate w-32">Product Launch Plan</span>
-                </div>
-                <button className="opacity-0 group-hover:opacity-100 text-primary hover:text-blue-700">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
-              </Link>
-              <Link to="/dashboard" className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 group">
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded bg-blue-50 border border-blue-200 flex items-center justify-center">
-                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                  </div>
-                  <span className="truncate w-32">Website Redesign</span>
-                </div>
-                <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
-              </Link>
-              <Link to="/dashboard" className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 group">
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 rounded bg-green-50 border border-green-200 flex items-center justify-center">
-                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  </div>
-                  <span className="truncate w-32">Marketing Q3</span>
-                </div>
-                <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
-              </Link>
+              {allBoards.map((b) => {
+                const isActive = location.pathname === `/b/${b.id}`;
+                return (
+                  <Link 
+                    key={b.id} 
+                    to={`/b/${b.id}`} 
+                    className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md group ${
+                      isActive ? 'bg-blue-50 text-primary' : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded bg-indigo-50 border border-indigo-200 flex items-center justify-center">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                      </div>
+                      <span className="truncate w-32">{b.title}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+              {allBoards.length === 0 && (
+                <div className="px-3 py-2 text-xs text-gray-400">No boards yet</div>
+              )}
             </nav>
           </div>
         </div>

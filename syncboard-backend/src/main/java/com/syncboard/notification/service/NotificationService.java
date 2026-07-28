@@ -28,12 +28,13 @@ public class NotificationService {
      * Called by other services (CommentService, CardService) — never by a direct HTTP request.
      */
     @Transactional
-    public void createAndDeliver(User recipient, NotificationType type, String message, Long referenceId) {
+    public void createAndDeliver(User recipient, NotificationType type, String message, Long referenceId, Long boardId) {
         Notification notification = Notification.builder()
                 .recipient(recipient)
                 .type(type)
                 .message(message)
                 .referenceId(referenceId)
+                .boardId(boardId)
                 .read(false)
                 .build();
 
@@ -89,6 +90,7 @@ public class NotificationService {
                 .type(n.getType())
                 .read(n.isRead())
                 .referenceId(n.getReferenceId())
+                .boardId(n.getBoardId())
                 .createdAt(n.getCreatedAt())
                 .build();
     }

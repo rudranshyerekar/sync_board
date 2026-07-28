@@ -191,6 +191,14 @@ const BoardView = () => {
                 onClose={() => setIsAddingColumn(false)} 
               />
 
+              {/* Invite Member Modal */}
+              <InviteMemberModal
+                isOpen={isInviteModalOpen}
+                onClose={() => setIsInviteModalOpen(false)}
+                workspaceId={board.workspaceId}
+                workspaceName="Workspace"
+              />
+
               {/* Floating Bottom Status Bar */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 shadow-lg rounded-full flex items-center justify-between px-6 py-2.5 text-xs text-gray-600 font-medium z-20 w-[600px] max-w-full">
                 <div className="flex items-center gap-2">
