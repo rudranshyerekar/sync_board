@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import com.syncboard.activity.service.ActivityService;
 import com.syncboard.workspace.dto.InviteMemberRequest;
 import com.syncboard.workspace.dto.UpdateRoleRequest;
 import com.syncboard.workspace.entity.Workspace;
@@ -28,6 +29,7 @@ public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     @Transactional
     public WorkspaceResponse createWorkspace(WorkspaceRequest request, String currentUserEmail) {
@@ -48,6 +50,8 @@ public class WorkspaceService {
                 .build();
 
         workspaceMemberRepository.save(ownerMember);
+
+        activityService.logActivity(saved, creator, "Created workspace", "Created workspace \"" + saved.getName() + "\"");
 
         return mapToResponse(saved);
     }
@@ -106,6 +110,7 @@ public class WorkspaceService {
             .build();
             
         workspaceMemberRepository.save(newMember);
+        activityService.logActivity(workspace, currentUser, "Invited member", "Invited " + invitee.getEmail() + " as " + request.getRole());
     }
 
     private Workspace getWorkspaceIfMember(Long workspaceId, String email) {
@@ -150,6 +155,7 @@ public class WorkspaceService {
 
         targetMember.setRole(request.getRole());
         workspaceMemberRepository.save(targetMember);
+        activityService.logActivity(workspace, currentUser, "Updated role", "Updated " + targetMember.getUser().getEmail() + "'s role to " + request.getRole());
     }
 
     @Transactional
@@ -172,5 +178,6 @@ public class WorkspaceService {
         }
 
         workspaceMemberRepository.delete(targetMember);
+        activityService.logActivity(workspace, currentUser, "Removed member", "Removed " + targetMember.getUser().getEmail() + " from workspace");
     }
 }

@@ -1,17 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings, LogOut } from 'lucide-react';
+import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings, LogOut, Menu, X } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
 import { useAuthStore } from '../../features/auth/state/useAuthStore';
 import { useNotificationStore } from '../../features/notifications/state/useNotificationStore';
+import { useBoardStore } from '../../features/board/state/useBoardStore';
+import { workspaceApi } from '../../api/workspaceApi';
+import { boardApi } from '../../api/boardApi';
 import { useWorkspaceStore } from '../../features/workspace/state/useWorkspaceStore';
 
 export const MainLayout = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { fetchNotifications } = useNotificationStore();
+  const { board } = useBoardStore();
+  const [sidebarBoards, setSidebarBoards] = useState([]);
   const { getAllBoards, fetchData } = useWorkspaceStore();
   const allBoards = getAllBoards();
 
@@ -20,11 +26,30 @@ export const MainLayout = () => {
     navigate('/login');
   };
 
-  // Fetch initial notification count and workspaces on mount
-  useEffect(() => {
-    fetchNotifications();
-    fetchData();
-  }, [fetchNotifications, fetchData]);
+useEffect(() => {
+  fetchNotifications();
+  fetchData();
+
+  const loadSidebarBoards = async () => {
+    try {
+      const workspaces = await workspaceApi.getMyWorkspaces();
+      const items = [];
+
+      for (const ws of workspaces) {
+        const boards = await boardApi.getBoards(ws.id);
+        for (const b of boards) {
+          items.push({ ...b, workspaceName: ws.name });
+        }
+      }
+
+      setSidebarBoards(items);
+    } catch (err) {
+      console.warn("Could not load sidebar boards:", err);
+    }
+  };
+
+  loadSidebarBoards();
+}, [location.pathname, fetchNotifications, fetchData]);
 
   const navItems = [
     { name: 'Boards', icon: LayoutDashboard, path: '/dashboard' },
@@ -37,10 +62,18 @@ export const MainLayout = () => {
   const currentUser = user || { name: 'Guest User', email: 'guest@example.com' };
 
   return (
-    <div className="h-screen bg-bg-primary flex overflow-hidden font-sans">
+    <div className="h-screen bg-bg-primary flex overflow-hidden font-sans relative">
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Global Left Sidebar */}
-      <aside className="w-64 border-r border-border bg-white flex flex-col justify-between hidden md:flex flex-shrink-0">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-white flex flex-col justify-between transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:flex flex-shrink-0`}>
         <div>
           {/* Logo + New Board */}
           <div className="p-5 flex items-center justify-between">
@@ -51,6 +84,12 @@ export const MainLayout = () => {
                 <p className="text-xs text-gray-500">Real-time. Together.</p>
               </div>
             </div>
+            <button 
+              className="md:hidden text-gray-400 hover:text-gray-600 p-1"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           <div className="px-4 mb-4">
@@ -81,29 +120,47 @@ export const MainLayout = () => {
           </nav>
 
           <div className="mt-8 px-3">
-            <h2 className="text-xs font-bold text-gray-400 mb-3 px-3 uppercase tracking-wider">Your Boards</h2>
-            <nav className="space-y-1">
-              {allBoards.map((b) => {
-                const isActive = location.pathname === `/b/${b.id}`;
-                return (
-                  <Link 
-                    key={b.id} 
-                    to={`/b/${b.id}`} 
-                    className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md group ${
-                      isActive ? 'bg-blue-50 text-primary' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded bg-indigo-50 border border-indigo-200 flex items-center justify-center">
-                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+            <div className="flex items-center justify-between px-3 mb-3">
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Your Boards</h2>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                {sidebarBoards.length}
+              </span>
+            </div>
+            <nav className="space-y-1 max-h-48 overflow-y-auto pr-1">
+              {sidebarBoards.length === 0 ? (
+                <div className="px-3 py-2 text-xs text-gray-400 italic">No boards active yet</div>
+              ) : (
+                sidebarBoards.map((b, idx) => {
+                  const isCurrent = location.pathname === `/b/${b.id}`;
+                  const colors = [
+                    'bg-purple-500 border-purple-200 bg-purple-100',
+                    'bg-blue-500 border-blue-200 bg-blue-100',
+                    'bg-green-500 border-green-200 bg-green-100',
+                    'bg-amber-500 border-amber-200 bg-amber-100'
+                  ];
+                  const dotClass = colors[idx % colors.length].split(' ')[0];
+                  const boxClass = colors[idx % colors.length].split(' ').slice(1).join(' ');
+
+                  return (
+                    <Link
+                      key={b.id}
+                      to={`/b/${b.id}`}
+                      className={`flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors group ${
+                        isCurrent ? 'bg-blue-50 text-primary font-bold shadow-sm' : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center ${boxClass}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`}></span>
+                        </div>
+                        <span className="truncate block max-w-[140px]">{b.title}</span>
                       </div>
-                      <span className="truncate w-32">{b.title}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-              {allBoards.length === 0 && (
-                <div className="px-3 py-2 text-xs text-gray-400">No boards yet</div>
+                      <span className="text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        →
+                      </span>
+                    </Link>
+                  );
+                })
               )}
             </nav>
           </div>
@@ -132,6 +189,17 @@ export const MainLayout = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-bg-primary">
+        {/* Mobile Top Bar */}
+        <div className="md:hidden flex items-center justify-between bg-white border-b border-border p-4 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center text-white font-bold text-lg">S</div>
+            <h1 className="font-bold text-gray-900 leading-tight">SyncBoard</h1>
+          </div>
+          <button onClick={() => setIsMobileMenuOpen(true)} className="text-gray-600 p-1 hover:bg-gray-100 rounded">
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
+
         <Outlet />
       </div>
     </div>

@@ -7,6 +7,7 @@ import com.syncboard.user.repository.UserRepository;
 import com.syncboard.workspace.entity.Workspace;
 import com.syncboard.workspace.repository.WorkspaceMemberRepository;
 import com.syncboard.workspace.repository.WorkspaceRepository;
+import com.syncboard.activity.service.ActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ public class BoardService {
     private final UserRepository userRepository;
     private final BoardColumnRepository boardColumnRepository;
     private final CardRepository cardRepository;
+    private final ActivityService activityService;
 
     @Transactional
     public BoardResponse createBoard(Long workspaceId, BoardRequest request, String currentUserEmail) {
@@ -62,6 +64,8 @@ public class BoardService {
         BoardColumn done = BoardColumn.builder().board(savedBoard).title("Done").position(3000.0).build();
         
         boardColumnRepository.saveAll(java.util.Arrays.asList(todo, inProgress, done));
+
+        activityService.logActivity(workspace, user, "Created board", "Created board \"" + savedBoard.getTitle() + "\"");
 
         return mapToResponse(savedBoard);
     }
@@ -170,7 +174,10 @@ public class BoardService {
             board.setPosition(request.getPosition());
         }
         
-        return mapToResponse(boardRepository.save(board));
+        board = boardRepository.save(board);
+        activityService.logActivity(board.getWorkspace(), user, "Updated board", "Updated details for board \"" + board.getTitle() + "\"");
+        
+        return mapToResponse(board);
     }
 
     @Transactional
@@ -184,6 +191,7 @@ public class BoardService {
             throw new BadRequestException("Not a member of this workspace");
         }
         
+        activityService.logActivity(board.getWorkspace(), user, "Deleted board", "Deleted board \"" + board.getTitle() + "\"");
         boardRepository.delete(board);
     }
 

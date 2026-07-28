@@ -54,12 +54,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class)
-    public ResponseEntity<ErrorResponse> handleOptimisticLockingException(org.springframework.orm.ObjectOptimisticLockingFailureException ex) {
+    @ExceptionHandler({org.springframework.orm.ObjectOptimisticLockingFailureException.class, org.hibernate.StaleObjectStateException.class})
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingException(Exception ex) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.CONFLICT.value())
-                .error("CONFLICT")
-                .message("The record you are trying to update has been modified by another user. Please refresh and try again.")
+                .error("OPTIMISTIC_LOCK_CONFLICT")
+                .message("Optimistic Concurrency Conflict: This item was modified concurrently by another user. Your changes were rejected to prevent overwriting their updates. Please review the updated state.")
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);

@@ -9,6 +9,7 @@ import com.syncboard.notification.service.NotificationService;
 import com.syncboard.user.entity.User;
 import com.syncboard.user.repository.UserRepository;
 import com.syncboard.workspace.repository.WorkspaceMemberRepository;
+import com.syncboard.activity.service.ActivityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -33,6 +34,7 @@ public class CardService {
     private final BoardColumnRepository boardColumnRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     // Setter injection with @Lazy to break the circular dependency with NotificationService
     private NotificationService notificationService;
@@ -75,7 +77,9 @@ public class CardService {
                 .position(request.getPosition() != null ? request.getPosition() : computeNextPosition(columnId))
                 .build();
 
-        return mapToResponse(cardRepository.save(card));
+        card = cardRepository.save(card);
+        activityService.logActivity(column.getBoard().getWorkspace(), user, "Created card", "Created card \"" + card.getTitle() + "\" in column \"" + column.getTitle() + "\"");
+        return mapToResponse(card);
     }
 
     public List<CardResponse> getCards(Long columnId, String currentUserEmail) {
@@ -133,7 +137,9 @@ public class CardService {
             card.setAssignee(null);
         }
 
-        return mapToResponse(cardRepository.save(card));
+        card = cardRepository.save(card);
+        activityService.logActivity(card.getColumn().getBoard().getWorkspace(), user, "Updated card", "Updated details for card \"" + card.getTitle() + "\"");
+        return mapToResponse(card);
     }
 
     @Transactional
@@ -146,6 +152,7 @@ public class CardService {
             throw new BadRequestException("Not a member of this workspace");
         }
         cardRepository.delete(card);
+        activityService.logActivity(card.getColumn().getBoard().getWorkspace(), user, "Deleted card", "Deleted card \"" + card.getTitle() + "\"");
     }
 
     @Transactional
@@ -161,17 +168,36 @@ public class CardService {
         BoardColumn targetColumn = boardColumnRepository.findById(targetColumnId).orElseThrow();
         card.setColumn(targetColumn);
         card.setPosition(targetPosition);
+// Completion notification
+String targetTitle = targetColumn.getTitle().toLowerCase();
+if (targetTitle.contains("done") || targetTitle.contains("complet")) {
+    if (card.getAssignee() != null &&
+            !card.getAssignee().getEmail().equals(user.getEmail())) {
 
-        // Completion notification
-        String targetTitle = targetColumn.getTitle().toLowerCase();
-        if (targetTitle.contains("done") || targetTitle.contains("complet")) {
-            if (card.getAssignee() != null && !card.getAssignee().getEmail().equals(user.getEmail())) {
-                String msg = String.format("%s moved \"%s\" to %s", user.getName(), card.getTitle(), targetColumn.getTitle());
-                notificationService.createAndDeliver(card.getAssignee(), NotificationType.COMPLETION, msg, card.getId(), targetColumn.getBoard().getId());
-            }
-        }
+        String msg = String.format("%s moved \"%s\" to %s",
+                user.getName(), card.getTitle(), targetColumn.getTitle());
 
-        return mapToResponse(cardRepository.save(card));
+        notificationService.createAndDeliver(
+                card.getAssignee(),
+                NotificationType.COMPLETION,
+                msg,
+                card.getId(),
+                targetColumn.getBoard().getId()
+        );
+    }
+}
+
+card = cardRepository.save(card);
+
+activityService.logActivity(
+        targetColumn.getBoard().getWorkspace(),
+        user,
+        "Moved card",
+        "Moved card \"" + card.getTitle() +
+        "\" to column \"" + targetColumn.getTitle() + "\""
+);
+
+return mapToResponse(card);
     }
 
     private Double computeNextPosition(Long columnId) {
