@@ -141,7 +141,7 @@ public class CommentService {
                     .ifPresent(mentioned -> {
                         String msg = String.format("%s mentioned you in a comment on card \"%s\"",
                                 author.getName(), card.getTitle());
-                        notificationService.createAndDeliver(mentioned, NotificationType.MENTION, msg, cardId);
+                        notificationService.createAndDeliver(mentioned, NotificationType.MENTION, msg, cardId, card.getColumn().getBoard().getId());
                     });
         }
     }

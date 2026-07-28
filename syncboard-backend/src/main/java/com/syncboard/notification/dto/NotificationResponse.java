@@ -17,5 +17,6 @@ public class NotificationResponse {
     @JsonProperty("isRead")
     private boolean read;
     private Long referenceId;
+    private Long boardId;
     private LocalDateTime createdAt;
 }

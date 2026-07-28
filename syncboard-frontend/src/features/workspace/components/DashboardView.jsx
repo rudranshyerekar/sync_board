@@ -6,47 +6,21 @@ import { Button } from '../../../components/Button';
 import { workspaceApi } from '../../../api/workspaceApi';
 import { boardApi } from '../../../api/boardApi';
 import { useAuthStore } from '../../auth/state/useAuthStore';
+import { useWorkspaceStore } from '../state/useWorkspaceStore';
 import { NotificationBell } from '../../notifications/components/NotificationBell';
 import { InviteMemberModal } from './InviteMemberModal';
 import { CreateWorkspaceModal } from './CreateWorkspaceModal';
 
 const DashboardView = () => {
   const { user } = useAuthStore();
-  const [workspaces, setWorkspaces] = useState([]);
-  const [workspaceBoards, setWorkspaceBoards] = useState({}); // { [workspaceId]: Board[] }
-  const [loading, setLoading] = useState(true);
+  const { workspaces, workspaceBoards, isLoading: loading, fetchData, addWorkspace } = useWorkspaceStore();
   const [selectedInviteWs, setSelectedInviteWs] = useState(null);
   const [isCreateWsOpen, setIsCreateWsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const wsData = await workspaceApi.getMyWorkspaces();
-        setWorkspaces(wsData);
-        
-        // Fetch boards for each workspace in parallel
-        const boardsMap = {};
-        await Promise.all(
-          wsData.map(async (ws) => {
-            try {
-              const boards = await boardApi.getBoards(ws.id);
-              boardsMap[ws.id] = boards;
-            } catch (err) {
-              console.error(`Failed to fetch boards for workspace ${ws.id}:`, err);
-              boardsMap[ws.id] = [];
-            }
-          })
-        );
-        setWorkspaceBoards(boardsMap);
-      } catch (err) {
-        console.error("Failed to load dashboard data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const getInitials = (title) => {
     if (!title) return 'B';
@@ -229,10 +203,7 @@ const DashboardView = () => {
       <CreateWorkspaceModal 
         isOpen={isCreateWsOpen}
         onClose={() => setIsCreateWsOpen(false)}
-        onWorkspaceCreated={(newWs) => {
-          setWorkspaces([...workspaces, newWs]);
-          setWorkspaceBoards({ ...workspaceBoards, [newWs.id]: [] });
-        }}
+        onWorkspaceCreated={(newWs) => addWorkspace(newWs)}
       />
     </div>
   );

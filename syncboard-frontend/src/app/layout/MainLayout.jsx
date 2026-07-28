@@ -8,6 +8,7 @@ import { useNotificationStore } from '../../features/notifications/state/useNoti
 import { useBoardStore } from '../../features/board/state/useBoardStore';
 import { workspaceApi } from '../../api/workspaceApi';
 import { boardApi } from '../../api/boardApi';
+import { useWorkspaceStore } from '../../features/workspace/state/useWorkspaceStore';
 
 export const MainLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,34 +18,38 @@ export const MainLayout = () => {
   const { fetchNotifications } = useNotificationStore();
   const { board } = useBoardStore();
   const [sidebarBoards, setSidebarBoards] = useState([]);
+  const { getAllBoards, fetchData } = useWorkspaceStore();
+  const allBoards = getAllBoards();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  // Fetch initial notifications and live sidebar boards on mount
-  useEffect(() => {
-    fetchNotifications();
+useEffect(() => {
+  fetchNotifications();
+  fetchData();
 
-    const loadSidebarBoards = async () => {
-      try {
-        const workspaces = await workspaceApi.getMyWorkspaces();
-        const items = [];
-        for (const ws of workspaces) {
-          const boards = await boardApi.getBoards(ws.id);
-          for (const b of boards) {
-            items.push({ ...b, workspaceName: ws.name });
-          }
+  const loadSidebarBoards = async () => {
+    try {
+      const workspaces = await workspaceApi.getMyWorkspaces();
+      const items = [];
+
+      for (const ws of workspaces) {
+        const boards = await boardApi.getBoards(ws.id);
+        for (const b of boards) {
+          items.push({ ...b, workspaceName: ws.name });
         }
-        setSidebarBoards(items);
-      } catch (err) {
-        console.warn("Could not load sidebar boards:", err);
       }
-    };
 
-    loadSidebarBoards();
-  }, [location.pathname]);
+      setSidebarBoards(items);
+    } catch (err) {
+      console.warn("Could not load sidebar boards:", err);
+    }
+  };
+
+  loadSidebarBoards();
+}, [location.pathname, fetchNotifications, fetchData]);
 
   const navItems = [
     { name: 'Boards', icon: LayoutDashboard, path: '/dashboard' },
