@@ -45,10 +45,12 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
+        String formattedMessage = String.join(", ", errors.values());
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("VALIDATION_ERROR")
-                .message(errors.toString())
+                .message(formattedMessage)
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);

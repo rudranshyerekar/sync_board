@@ -12,6 +12,8 @@ public class BoardResponse {
     private Long workspaceId;
     private String title;
     private Double position;
+    private String description;
+    private com.syncboard.board.entity.BoardPrivacy privacy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

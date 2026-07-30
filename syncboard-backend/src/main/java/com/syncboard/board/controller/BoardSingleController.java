@@ -46,4 +46,29 @@ public class BoardSingleController {
         boardService.deleteBoard(boardId, authentication.getName());
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/members")
+    public ResponseEntity<java.util.List<com.syncboard.user.dto.UserResponse>> getBoardMembers(
+            @PathVariable Long boardId,
+            Authentication authentication) {
+        return ResponseEntity.ok(boardService.getBoardMembers(boardId, authentication.getName()));
+    }
+
+    @PostMapping("/members")
+    public ResponseEntity<Void> addBoardMember(
+            @PathVariable Long boardId,
+            @RequestBody java.util.Map<String, Long> payload,
+            Authentication authentication) {
+        boardService.addBoardMember(boardId, payload.get("userId"), authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/members/{userId}")
+    public ResponseEntity<Void> removeBoardMember(
+            @PathVariable Long boardId,
+            @PathVariable Long userId,
+            Authentication authentication) {
+        boardService.removeBoardMember(boardId, userId, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
 }

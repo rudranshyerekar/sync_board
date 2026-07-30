@@ -32,6 +32,22 @@ export const boardApi = {
     return response.data;
   },
 
+  // Members
+  getMembers: async (boardId) => {
+    const response = await httpClient.get(`/boards/${boardId}/members`);
+    return response.data;
+  },
+
+  addMember: async (boardId, userId) => {
+    const response = await httpClient.post(`/boards/${boardId}/members`, { userId });
+    return response.data;
+  },
+
+  removeMember: async (boardId, userId) => {
+    const response = await httpClient.delete(`/boards/${boardId}/members/${userId}`);
+    return response.data;
+  },
+
   // Columns
   createColumn: async (boardId, columnData) => {
     const response = await httpClient.post(`/boards/${boardId}/columns`, columnData);

@@ -63,9 +63,6 @@ const DashboardView = () => {
             />
           </div>
           <NotificationBell />
-          <Button variant="secondary" className="flex items-center gap-2 py-1.5 text-sm text-gray-700">
-            <Filter className="w-4 h-4" /> Filter
-          </Button>
           <Button variant="secondary" onClick={() => setIsCreateWsOpen(true)} className="py-1.5 text-sm">
             Create Workspace
           </Button>
