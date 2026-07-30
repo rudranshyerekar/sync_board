@@ -116,7 +116,7 @@ syncboard-backend/
 │   │   └── dto/
 │   │
 │   ├── board/
-│   │   ├── entity/ Board, Column
+│   │   ├── entity/ Board, Column, BoardMember, BoardPrivacy
 │   │   ├── repository/
 │   │   ├── controller/ BoardController
 │   │   ├── service/ BoardService
@@ -231,8 +231,11 @@ syncboard-frontend/
 │   │   │   ├── components (NotificationBell, NotificationPanel)
 │   │   │   └── state
 │   │   │
-│   │   └── activity/
-│   │       └── components (ActivityFeed)
+│   │   ├── activity/
+│   │   │   └── components (ActivityFeed)
+│   │   │
+│   │   └── settings/
+│   │       └── components (SettingsView, ProfileEditor)
 │   │
 │   ├── components/                          (shared, feature-agnostic UI primitives)
 │   │   ├── Button, Input, Modal, Drawer, Avatar, Badge, Toast, Tooltip

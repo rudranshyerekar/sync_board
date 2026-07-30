@@ -150,7 +150,7 @@ runtimeOnly 'com.mysql:mysql-connector-j'
 User ──────┐
            ├── WorkspaceMember ──── Workspace
            │                           │
-           │                         Board
+           ├── BoardMember ───────── Board
            │                           │
            │                        Column
            │                           │
@@ -170,8 +170,9 @@ User ──────┐
 | **User** | id, name, email, password_hash, avatar_url, presence_status, last_seen | `presence_status` is denormalized for fast lookup |
 | **Workspace** | id, name, created_by, created_at | Top-level container |
 | **WorkspaceMember** | id, user_id, workspace_id, role | Role: OWNER / ADMIN / MEMBER |
-| **Board** | id, workspace_id, title, position | `position` for ordering within workspace |
-| **Column** | id, board_id, title, position | `position` for ordering within board |
+| **Board** | id, workspace_id, title, position, privacy | `privacy`: WORKSPACE or PRIVATE |
+| **BoardMember** | id, user_id, board_id | Explicit access for PRIVATE boards |
+| **Column** | id, board_id, title, position, color, description | `color` mapped for UI aesthetics |
 | **Card** | id, column_id, title, description, priority, assignee_id, deadline, position, **version**, created_at, updated_at | `version` for optimistic locking; `position` for ordering within column |
 | **Comment** | id, card_id, author_id, content, created_at | Supports @mentions (parsed from content) |
 | **Notification** | id, recipient_id, message, type, is_read, created_at | Type: ASSIGNMENT / MENTION / COMPLETION |
@@ -195,6 +196,7 @@ Cards, Columns, and Boards all have a `position` field for ordering. Use a **fra
 | Table | Index | Why |
 |-------|-------|-----|
 | `workspace_member` | `(user_id, workspace_id)` UNIQUE | Fast membership lookup, prevent duplicates |
+| `board_member` | `(board_id, user_id)` UNIQUE | Fast private board authorization |
 | `board` | `(workspace_id, position)` | List boards in a workspace, ordered |
 | `column_entity` | `(board_id, position)` | List columns in a board, ordered |
 | `card` | `(column_id, position)` | List cards in a column, ordered |
