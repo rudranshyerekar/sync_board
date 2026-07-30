@@ -3,7 +3,7 @@
 
 **Purpose:** This is the single file an AI (or new developer) should read first to understand where the project stands without re-analyzing the entire codebase. Update this file after every significant implementation milestone.
 
-**Last Updated:** 2026-07-25
+**Last Updated:** 2026-07-31
 
 ---
 
@@ -102,6 +102,19 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 ---
 
 ## Recent Changes (Reverse Chronological)
+
+### 2026-07-31
+- **Feature: Private Boards & Security Hardening**:
+  - Implemented `BoardPrivacy` enum (`WORKSPACE`, `PRIVATE`) and `BoardMember` entity to restrict access to specific boards.
+  - Hardened backend security in `BoardColumnService`, `CardService`, and `CommentService` to enforce `BoardMemberRepository` checks, securing downstream objects against unauthorized access.
+  - Added new backend endpoints (`GET`, `POST`, `DELETE` at `/api/boards/{id}/members`) for real-time board membership management.
+- **UI Enhancements: Smart Invites & Navigation**:
+  - Developed `InviteBoardMemberModal.jsx` for targeted private board invitations, showing real-time "Add" and "Remove" toggles.
+  - Context-aware "Invite" buttons inside boards trigger workspace vs. private invites based on the board's privacy level.
+  - Added visual lock icons (`<Lock />`) across the dashboard and sidebar navigation to distinguish private boards.
+- **Feature: Column Color Customization**:
+  - Upgraded `CreateBoardView.jsx` to support defining initial columns as objects (`{ title, color }`) instead of raw strings.
+  - Built an inline component for adding new columns with a built-in 8-swatch color picker, mapping natively to the backend `InitialColumnRequest`.
 
 ### 2026-07-25
 - **Phase 5 Comments + Notifications — Full Implementation:**

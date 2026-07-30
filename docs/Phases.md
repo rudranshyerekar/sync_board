@@ -19,12 +19,12 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** A clean, running skeleton before any feature work begins.
 
 **Tasks:**
-- [ ] Initialize the backend project (Spring Boot, with Web, Security, WebSocket, Data JPA, and MySQL driver dependencies).
-- [ ] Initialize the frontend project (React, React Router, Tailwind CSS configured).
-- [ ] Set up the local MySQL instance (ensure the MySQL server is running, create the `syncboard` database with `utf8mb4` charset).
-- [ ] Verify the backend can connect to the database and the frontend dev server can reach the backend (a simple health-check endpoint is enough).
-- [ ] Establish the folder structure from Architecture.md for both projects, even with empty placeholder files.
-- [ ] Set up environment/config files for local development (see Architecture.md §8).
+- [x] Initialize the backend project (Spring Boot, with Web, Security, WebSocket, Data JPA, and MySQL driver dependencies).
+- [x] Initialize the frontend project (React, React Router, Tailwind CSS configured).
+- [x] Set up the local MySQL instance (ensure the MySQL server is running, create the `syncboard` database with `utf8mb4` charset).
+- [x] Verify the backend can connect to the database and the frontend dev server can reach the backend (a simple health-check endpoint is enough).
+- [x] Establish the folder structure from Architecture.md for both projects, even with empty placeholder files.
+- [x] Set up environment/config files for local development (see Architecture.md §8).
 
 **Done when:** you can run the backend, run the frontend, and hit a trivial "health" endpoint from the browser, with the database container up alongside.
 
@@ -37,15 +37,15 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** Every core entity exists and is manageable via REST, verified without a frontend yet (a REST client or API docs UI is enough).
 
 **Tasks:**
-- [ ] Implement User entity, registration, and password hashing.
-- [ ] Implement login issuing an access token and a refresh token.
-- [ ] Implement the JWT authentication filter protecting all non-auth endpoints.
-- [ ] Implement refresh-token exchange and logout (token revocation).
-- [ ] Implement Workspace and WorkspaceMember entities; creating a workspace auto-assigns the creator as Owner.
-- [ ] Implement invite/add-member and role-assignment endpoints, enforcing Owner/Admin-only access.
-- [ ] Implement Board, Column, and Card entities with full CRUD endpoints, scoped correctly to their parent workspace/board.
-- [ ] Implement the global exception handler and consistent error response shape (see Rules.md §7).
-- [ ] Add the `version` field to Card and wire a basic optimistic-lock check on update (full soft-lock/editing UX comes later — the version mechanism itself should exist now).
+- [x] Implement User entity, registration, and password hashing.
+- [x] Implement login issuing an access token and a refresh token.
+- [x] Implement the JWT authentication filter protecting all non-auth endpoints.
+- [x] Implement refresh-token exchange and logout (token revocation).
+- [x] Implement Workspace and WorkspaceMember entities; creating a workspace auto-assigns the creator as Owner.
+- [x] Implement invite/add-member and role-assignment endpoints, enforcing Owner/Admin-only access.
+- [x] Implement Board, Column, and Card entities with full CRUD endpoints, scoped correctly to their parent workspace/board.
+- [x] Implement the global exception handler and consistent error response shape (see Rules.md §7).
+- [x] Add the `version` field to Card and wire a basic optimistic-lock check on update (full soft-lock/editing UX comes later — the version mechanism itself should exist now).
 
 **Done when:** using only REST calls, you can register two users, have one create a workspace and invite the other, and both can create boards, columns, and cards within it — with unauthorized actions (e.g., a Member trying to delete a board) correctly rejected.
 
@@ -58,12 +58,12 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** A fully working single-user board experience, entirely over REST, before any WebSocket complexity is introduced.
 
 **Tasks:**
-- [ ] Build Login/Register pages and the Axios interceptor for token attachment + silent refresh.
-- [ ] Build the Dashboard, Workspace view, and Board view, all fetching from the Phase 1 REST APIs.
-- [ ] Build the Card Detail Drawer showing full card fields (no comments/live features yet).
-- [ ] Wire up React DnD for card movement between columns, persisting the move via REST on drop.
-- [ ] Implement the position-recalculation approach for reordering (see PRD §8.3) and verify it holds up under repeated reordering without needing to rewrite every sibling's position.
-- [ ] Implement route guards so unauthenticated access redirects to Login.
+- [x] Build Login/Register pages and the Axios interceptor for token attachment + silent refresh.
+- [x] Build the Dashboard, Workspace view, and Board view, all fetching from the Phase 1 REST APIs.
+- [x] Build the Card Detail Drawer showing full card fields (no comments/live features yet).
+- [x] Wire up React DnD for card movement between columns, persisting the move via REST on drop.
+- [x] Implement the position-recalculation approach for reordering (see PRD §8.3) and verify it holds up under repeated reordering without needing to rewrite every sibling's position.
+- [x] Implement route guards so unauthenticated access redirects to Login.
 
 **Done when:** a single logged-in user can fully manage a board — create/edit/delete cards, drag them between columns, reorder within a column — and refreshing the page always reflects the true current state.
 
@@ -76,11 +76,11 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** The first true real-time milestone — two browser sessions see card moves live, without refreshing.
 
 **Tasks:**
-- [ ] Set up the STOMP endpoint and broker configuration on the backend, with the WebSocket handshake authenticated via the access token.
-- [ ] Build the frontend WebSocket layer (connection, subscription management, dispatcher) as its own module, not embedded in board components.
-- [ ] Route card moves through STOMP (client sends the move, server validates/persists/broadcasts) rather than plain REST, or dual-path it deliberately if you choose that design (see PRD §12).
-- [ ] Implement the optimistic-update pattern on the frontend generically: apply locally, send, reconcile on the broadcast.
-- [ ] Implement the "reconnect = full resync" behavior: on reconnect, re-fetch the board's current state via REST rather than trying to replay missed events.
+- [x] Set up the STOMP endpoint and broker configuration on the backend, with the WebSocket handshake authenticated via the access token.
+- [x] Build the frontend WebSocket layer (connection, subscription management, dispatcher) as its own module, not embedded in board components.
+- [x] Route card moves through STOMP (client sends the move, server validates/persists/broadcasts) rather than plain REST, or dual-path it deliberately if you choose that design (see PRD §12).
+- [x] Implement the optimistic-update pattern on the frontend generically: apply locally, send, reconcile on the broadcast.
+- [x] Implement the "reconnect = full resync" behavior: on reconnect, re-fetch the board's current state via REST rather than trying to replay missed events.
 
 **Done when:** with two browser windows open on the same board (e.g., a normal window and an incognito window as two different users), dragging a card in one instantly moves it in the other, with no manual refresh — and disconnecting/reconnecting one window correctly resyncs it.
 
@@ -93,13 +93,13 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** The board feels populated and honest about who's around and who's touching what.
 
 **Tasks:**
-- [ ] Implement the session registry tracking connected users and their last-heartbeat timestamp.
-- [ ] Implement the client-side heartbeat (periodic ping) and the server-side timeout check that marks a user Offline if a heartbeat is missed.
-- [ ] Broadcast presence changes (online/idle/away/offline) to the presence topic and render the live presence list in the UI.
-- [ ] Implement Idle/Away transitions based on client-side input inactivity.
-- [ ] Implement "currently editing" broadcast when a card detail drawer opens, and the corresponding banner on other clients viewing the same card.
-- [ ] Tie the editing indicator's lifetime to the same liveness mechanism as presence, so it clears automatically if the editor's connection goes stale (see Rules.md §9 and PRD §16).
-- [ ] Verify the full optimistic-concurrency conflict flow end-to-end (PRD §10.5): two users editing the same card, one saves first, the second gets a clear rejection with the current state.
+- [x] Implement the session registry tracking connected users and their last-heartbeat timestamp.
+- [x] Implement the client-side heartbeat (periodic ping) and the server-side timeout check that marks a user Offline if a heartbeat is missed.
+- [x] Broadcast presence changes (online/idle/away/offline) to the presence topic and render the live presence list in the UI.
+- [x] Implement Idle/Away transitions based on client-side input inactivity.
+- [x] Implement "currently editing" broadcast when a card detail drawer opens, and the corresponding banner on other clients viewing the same card.
+- [x] Tie the editing indicator's lifetime to the same liveness mechanism as presence, so it clears automatically if the editor's connection goes stale (see Rules.md §9 and PRD §16).
+- [x] Verify the full optimistic-concurrency conflict flow end-to-end (PRD §10.5): two users editing the same card, one saves first, the second gets a clear rejection with the current state.
 
 **Done when:** closing a browser tab without a clean disconnect (e.g., killing the browser process, or using dev tools to simulate an offline network) still results in that user showing as Offline within your defined grace period on other clients — and two simultaneous edits to the same card never silently overwrite each other.
 
@@ -112,12 +112,12 @@ Suggested pacing assumes part-time/self-paced work; treat the durations as a rou
 **Goal:** The card detail experience feels alive, and users learn about relevant events without staring at the board.
 
 **Tasks:**
-- [ ] Implement Comment entity, posting, and fetching, with live broadcast to everyone viewing that card.
-- [ ] Implement mention parsing in comments (referencing another workspace member).
-- [ ] Implement the typing-indicator ephemeral event: client sends while focused/typing, server broadcasts, other clients show a transient indicator that auto-clears after a short timeout.
-- [ ] Implement the Notification entity and service, triggered server-side by other services (assignment, mention, completion) — never created directly by a raw client request.
-- [ ] Implement live delivery of notifications to a connected user's personal topic, plus persistence so offline users see them on next login.
-- [ ] Build the Notification Bell/Panel UI with unread counts and mark-as-read.
+- [x] Implement Comment entity, posting, and fetching, with live broadcast to everyone viewing that card.
+- [x] Implement mention parsing in comments (referencing another workspace member).
+- [x] Implement the typing-indicator ephemeral event: client sends while focused/typing, server broadcasts, other clients show a transient indicator that auto-clears after a short timeout.
+- [x] Implement the Notification entity and service, triggered server-side by other services (assignment, mention, completion) — never created directly by a raw client request.
+- [x] Implement live delivery of notifications to a connected user's personal topic, plus persistence so offline users see them on next login.
+- [x] Build the Notification Bell/Panel UI with unread counts and mark-as-read.
 
 **Done when:** posting a comment appears live for everyone viewing that card; typing shows and then correctly disappears if you stop typing (and also if you abruptly close the tab); assigning a card or mentioning someone generates a notification that appears live if they're connected, and is waiting for them if they're not.
 
