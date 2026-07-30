@@ -4,6 +4,8 @@ import com.syncboard.card.entity.Card;
 import com.syncboard.card.repository.CardRepository;
 import com.syncboard.comment.dto.CommentResponse;
 import com.syncboard.comment.entity.Comment;
+import com.syncboard.board.entity.BoardPrivacy;
+import com.syncboard.board.repository.BoardMemberRepository;
 import com.syncboard.comment.repository.CommentRepository;
 import com.syncboard.common.exception.BadRequestException;
 import com.syncboard.common.exception.ResourceNotFoundException;
@@ -37,6 +39,7 @@ public class CommentService {
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final BoardMemberRepository boardMemberRepository;
     private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ActivityService activityService;
@@ -61,6 +64,9 @@ public class CommentService {
         Long workspaceId = getWorkspaceId(cardId);
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, author.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (card.getColumn().getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(card.getColumn().getBoard().getId(), author.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         Comment comment = Comment.builder()
@@ -87,7 +93,7 @@ public class CommentService {
     }
 
     public List<CommentResponse> getComments(Long cardId, String currentUserEmail) {
-        cardRepository.findById(cardId)
+        Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
         User user = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -95,6 +101,9 @@ public class CommentService {
         Long workspaceId = getWorkspaceId(cardId);
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (card.getColumn().getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(card.getColumn().getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         return commentRepository.findByCardIdOrderByCreatedAtAsc(cardId)
@@ -107,6 +116,10 @@ public class CommentService {
     public void deleteComment(Long commentId, String currentUserEmail) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+        User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
+        if (comment.getCard().getColumn().getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(comment.getCard().getColumn().getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
 
         if (!comment.getAuthor().getEmail().equals(currentUserEmail)) {
             throw new BadRequestException("You can only delete your own comments");

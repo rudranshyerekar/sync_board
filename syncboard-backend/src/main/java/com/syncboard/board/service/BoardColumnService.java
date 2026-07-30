@@ -14,7 +14,9 @@ import java.util.stream.Collectors;
 import com.syncboard.activity.service.ActivityService;
 import com.syncboard.board.entity.Board;
 import com.syncboard.board.entity.BoardColumn;
+import com.syncboard.board.entity.BoardPrivacy;
 import com.syncboard.board.repository.BoardColumnRepository;
+import com.syncboard.board.repository.BoardMemberRepository;
 import com.syncboard.board.repository.BoardRepository;
 import com.syncboard.board.dto.ColumnRequest;
 import com.syncboard.board.dto.ColumnResponse;
@@ -26,6 +28,7 @@ public class BoardColumnService {
 
     private final BoardColumnRepository boardColumnRepository;
     private final BoardRepository boardRepository;
+    private final BoardMemberRepository boardMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
     private final ActivityService activityService;
@@ -39,6 +42,9 @@ public class BoardColumnService {
 
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(boardId, user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         BoardColumn column = BoardColumn.builder()
@@ -61,6 +67,9 @@ public class BoardColumnService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(boardId, user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
 
         return boardColumnRepository.findByBoardIdOrderByPositionAsc(boardId)
                 .stream()
@@ -76,6 +85,9 @@ public class BoardColumnService {
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         column.setTitle(request.getTitle());
@@ -102,6 +114,9 @@ public class BoardColumnService {
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(column.getBoard().getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (column.getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(column.getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         boardColumnRepository.delete(column);

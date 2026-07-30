@@ -92,7 +92,7 @@ export const useBoardStore = create((set, get) => ({
     } catch (err) {
       console.error("Failed to update card:", err);
       if (err.response?.status === 409) {
-        alert("⚠️ Concurrency Conflict: Someone else modified this card! Your changes could not be applied. Reloading latest board state...");
+        alert("Someone else changed this card. Your changes were rejected. The board has been updated with the latest changes.");
       } else {
         alert("Failed to update card. Changes have been reverted.");
       }
@@ -231,7 +231,7 @@ export const useBoardStore = create((set, get) => ({
     } catch (err) {
       console.error("Failed to sync card move:", err);
       if (err.response?.status === 409) {
-        alert("⚠️ Concurrency Conflict: Someone else moved or edited this card! Reloading latest board state...");
+        alert("Someone else changed this card. Your changes were rejected. The board has been updated with the latest changes.");
       } else {
         alert("Failed to move card. Changes have been reverted.");
       }

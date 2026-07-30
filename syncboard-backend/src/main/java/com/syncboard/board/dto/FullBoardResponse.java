@@ -13,6 +13,8 @@ public class FullBoardResponse {
     private Long workspaceId;
     private String title;
     private Double position;
+    private String description;
+    private com.syncboard.board.entity.BoardPrivacy privacy;
     private List<ColumnWithCardsResponse> columns;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

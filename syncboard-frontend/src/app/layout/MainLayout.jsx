@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Plus, LayoutDashboard, CheckSquare, Activity, Calendar, Settings, LogOut, Menu, X, Lock } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
 import { useAuthStore } from '../../features/auth/state/useAuthStore';
 import { useNotificationStore } from '../../features/notifications/state/useNotificationStore';
 import { useBoardStore } from '../../features/board/state/useBoardStore';
-import { workspaceApi } from '../../api/workspaceApi';
-import { boardApi } from '../../api/boardApi';
 import { useWorkspaceStore } from '../../features/workspace/state/useWorkspaceStore';
 
 export const MainLayout = () => {
@@ -17,7 +15,6 @@ export const MainLayout = () => {
   const { user, logout } = useAuthStore();
   const { fetchNotifications } = useNotificationStore();
   const { board } = useBoardStore();
-  const [sidebarBoards, setSidebarBoards] = useState([]);
   const { getAllBoards, fetchData } = useWorkspaceStore();
   const allBoards = getAllBoards();
 
@@ -29,26 +26,6 @@ export const MainLayout = () => {
 useEffect(() => {
   fetchNotifications();
   fetchData();
-
-  const loadSidebarBoards = async () => {
-    try {
-      const workspaces = await workspaceApi.getMyWorkspaces();
-      const items = [];
-
-      for (const ws of workspaces) {
-        const boards = await boardApi.getBoards(ws.id);
-        for (const b of boards) {
-          items.push({ ...b, workspaceName: ws.name });
-        }
-      }
-
-      setSidebarBoards(items);
-    } catch (err) {
-      console.warn("Could not load sidebar boards:", err);
-    }
-  };
-
-  loadSidebarBoards();
 }, [location.pathname, fetchNotifications, fetchData]);
 
   const navItems = [
@@ -123,14 +100,14 @@ useEffect(() => {
             <div className="flex items-center justify-between px-3 mb-3">
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Your Boards</h2>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
-                {sidebarBoards.length}
+                {allBoards.length}
               </span>
             </div>
             <nav className="space-y-1 max-h-48 overflow-y-auto pr-1">
-              {sidebarBoards.length === 0 ? (
+              {allBoards.length === 0 ? (
                 <div className="px-3 py-2 text-xs text-gray-400 italic">No boards active yet</div>
               ) : (
-                sidebarBoards.map((b, idx) => {
+                allBoards.map((b, idx) => {
                   const isCurrent = location.pathname === `/b/${b.id}`;
                   const colors = [
                     'bg-purple-500 border-purple-200 bg-purple-100',
@@ -154,6 +131,9 @@ useEffect(() => {
                           <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`}></span>
                         </div>
                         <span className="truncate block max-w-[140px]">{b.title}</span>
+                        {b.privacy === 'PRIVATE' && (
+                          <Lock className="w-3 h-3 text-gray-400 flex-shrink-0 ml-0.5" />
+                        )}
                       </div>
                       <span className="text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                         →

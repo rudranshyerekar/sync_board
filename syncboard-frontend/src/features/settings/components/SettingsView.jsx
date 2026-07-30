@@ -93,33 +93,21 @@ export const SettingsView = () => {
       <div className="px-8 border-b border-border bg-gray-50 flex gap-8">
         <button
           onClick={() => setActiveTab('MEMBERS')}
-          className={`py-4 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
-            activeTab === 'MEMBERS'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-800'
-          }`}
+          className={`py-4 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'MEMBERS'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-gray-500 hover:text-gray-800'
+            }`}
         >
           <Users className="w-4 h-4" /> Workspace Members ({selectedWorkspace?.members?.length || 1})
         </button>
         <button
           onClick={() => setActiveTab('GENERAL')}
-          className={`py-4 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
-            activeTab === 'GENERAL'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-800'
-          }`}
+          className={`py-4 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'GENERAL'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-gray-500 hover:text-gray-800'
+            }`}
         >
           <User className="w-4 h-4" /> Profile & Security
-        </button>
-        <button
-          onClick={() => setActiveTab('NOTIFICATIONS')}
-          className={`py-4 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
-            activeTab === 'NOTIFICATIONS'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-gray-500 hover:text-gray-800'
-          }`}
-        >
-          <Bell className="w-4 h-4" /> Notification Preferences
         </button>
       </div>
 
@@ -231,29 +219,8 @@ export const SettingsView = () => {
               <span className="text-xs font-semibold text-gray-400">Account status: Active · Token verification passed</span>
             </div>
           </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-border shadow-sm p-6 space-y-6">
-            <h3 className="text-base font-bold text-gray-900">Real-Time Notification Delivery</h3>
-            <div className="space-y-4 max-w-lg">
-              <label className="flex items-center justify-between p-3.5 border border-border rounded-lg cursor-pointer hover:bg-gray-50">
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">Live Card Assignment Alerts</div>
-                  <div className="text-xs text-gray-500">Receive STOMP personal topic alerts when tasks are delegated to you</div>
-                </div>
-                <input type="checkbox" defaultChecked className="w-4 h-4 text-primary rounded border-gray-300" />
-              </label>
-              <label className="flex items-center justify-between p-3.5 border border-border rounded-lg cursor-pointer hover:bg-gray-50">
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">@Mention Broadcasts</div>
-                  <div className="text-xs text-gray-500">Notify instantly when teammates tag your username in card comments</div>
-                </div>
-                <input type="checkbox" defaultChecked className="w-4 h-4 text-primary rounded border-gray-300" />
-              </label>
-            </div>
-          </div>
-        )}
+        ) : null}
       </main>
-
       {/* Invite Member Modal binding */}
       {inviteModalOpen && selectedWorkspace && (
         <InviteMemberModal

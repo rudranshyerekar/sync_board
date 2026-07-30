@@ -1,7 +1,9 @@
 package com.syncboard.card.service;
 
 import com.syncboard.board.entity.BoardColumn;
+import com.syncboard.board.entity.BoardPrivacy;
 import com.syncboard.board.repository.BoardColumnRepository;
+import com.syncboard.board.repository.BoardMemberRepository;
 import com.syncboard.common.exception.BadRequestException;
 import com.syncboard.common.exception.ResourceNotFoundException;
 import com.syncboard.notification.entity.NotificationType;
@@ -32,6 +34,7 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final BoardColumnRepository boardColumnRepository;
+    private final BoardMemberRepository boardMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final UserRepository userRepository;
     private final ActivityService activityService;
@@ -59,6 +62,9 @@ public class CardService {
 
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (column.getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(column.getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         User assignee = null;
@@ -88,6 +94,9 @@ public class CardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(column.getBoard().getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (column.getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(column.getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
 
         return cardRepository.findByColumnIdOrderByPositionAsc(columnId)
                 .stream()
@@ -104,6 +113,9 @@ public class CardService {
 
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (card.getColumn().getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(card.getColumn().getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         if (request.getVersion() != null && !request.getVersion().equals(card.getVersion())) {
@@ -151,6 +163,9 @@ public class CardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (card.getColumn().getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(card.getColumn().getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
         cardRepository.delete(card);
         activityService.logActivity(card.getColumn().getBoard().getWorkspace(), user, "Deleted card", "Deleted card \"" + card.getTitle() + "\"");
     }
@@ -164,8 +179,14 @@ public class CardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(workspaceId, user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (card.getColumn().getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(card.getColumn().getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
 
         BoardColumn targetColumn = boardColumnRepository.findById(targetColumnId).orElseThrow();
+        if (targetColumn.getBoard().getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(targetColumn.getBoard().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of target private board");
+        }
         card.setColumn(targetColumn);
         card.setPosition(targetPosition);
 // Completion notification

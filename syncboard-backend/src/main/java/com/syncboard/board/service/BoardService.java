@@ -8,6 +8,9 @@ import com.syncboard.workspace.entity.Workspace;
 import com.syncboard.workspace.repository.WorkspaceMemberRepository;
 import com.syncboard.workspace.repository.WorkspaceRepository;
 import com.syncboard.activity.service.ActivityService;
+import com.syncboard.board.entity.BoardPrivacy;
+import com.syncboard.board.entity.BoardMember;
+import com.syncboard.board.repository.BoardMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +38,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final BoardMemberRepository boardMemberRepository;
     private final UserRepository userRepository;
     private final BoardColumnRepository boardColumnRepository;
     private final CardRepository cardRepository;
@@ -53,18 +57,50 @@ public class BoardService {
         Board board = Board.builder()
                 .workspace(workspace)
                 .title(request.getTitle())
+                .description(request.getDescription())
+                .privacy(request.getPrivacy() != null ? request.getPrivacy() : BoardPrivacy.WORKSPACE)
                 .position(request.getPosition() != null ? request.getPosition() : computeNextPosition(workspaceId))
                 .build();
 
         Board savedBoard = boardRepository.save(board);
 
-        // Create default columns with colors
-        BoardColumn todo = BoardColumn.builder().board(savedBoard).title("To Do").position(1000.0).color("gray").build();
-        BoardColumn inProgress = BoardColumn.builder().board(savedBoard).title("In Progress").position(2000.0).color("yellow").build();
-        BoardColumn review = BoardColumn.builder().board(savedBoard).title("Review").position(3000.0).color("blue").build();
-        BoardColumn done = BoardColumn.builder().board(savedBoard).title("Done").position(4000.0).color("green").build();
+        if (savedBoard.getPrivacy() == BoardPrivacy.PRIVATE) {
+            boardMemberRepository.save(BoardMember.builder().board(savedBoard).user(user).build());
+            if (request.getInviteeIds() != null) {
+                for (Long inviteeId : request.getInviteeIds()) {
+                    if (!inviteeId.equals(user.getId())) {
+                        userRepository.findById(inviteeId).ifPresent(invitee -> {
+                            boardMemberRepository.save(BoardMember.builder().board(savedBoard).user(invitee).build());
+                        });
+                    }
+                }
+            }
+        }
+
+        List<BoardColumn> columnsToSave = new java.util.ArrayList<>();
+        if (request.getInitialColumns() != null && !request.getInitialColumns().isEmpty()) {
+            double pos = 1000.0;
+            String[] colors = {"gray", "yellow", "blue", "green", "purple", "pink", "orange"};
+            int colorIdx = 0;
+            for (BoardRequest.InitialColumnRequest colReq : request.getInitialColumns()) {
+                columnsToSave.add(BoardColumn.builder()
+                        .board(savedBoard)
+                        .title(colReq.getTitle())
+                        .position(pos)
+                        .color(colReq.getColor() != null && !colReq.getColor().isBlank() ? colReq.getColor() : colors[colorIdx % colors.length])
+                        .build());
+                pos += 1000.0;
+                colorIdx++;
+            }
+        } else {
+            // Default columns
+            columnsToSave.add(BoardColumn.builder().board(savedBoard).title("To Do").position(1000.0).color("gray").build());
+            columnsToSave.add(BoardColumn.builder().board(savedBoard).title("In Progress").position(2000.0).color("yellow").build());
+            columnsToSave.add(BoardColumn.builder().board(savedBoard).title("Review").position(3000.0).color("blue").build());
+            columnsToSave.add(BoardColumn.builder().board(savedBoard).title("Done").position(4000.0).color("green").build());
+        }
         
-        boardColumnRepository.saveAll(java.util.Arrays.asList(todo, inProgress, review, done));
+        boardColumnRepository.saveAll(columnsToSave);
 
         activityService.logActivity(workspace, user, "Created board", "Created board \"" + savedBoard.getTitle() + "\"");
 
@@ -79,6 +115,7 @@ public class BoardService {
 
         return boardRepository.findByWorkspaceIdOrderByPositionAsc(workspaceId)
                 .stream()
+                .filter(b -> b.getPrivacy() == BoardPrivacy.WORKSPACE || boardMemberRepository.existsByBoardIdAndUserId(b.getId(), user.getId()))
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -91,6 +128,9 @@ public class BoardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
         return mapToResponse(board);
     }
 
@@ -101,6 +141,9 @@ public class BoardService {
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
+        }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
         }
 
         List<BoardColumn> columns = boardColumnRepository.findByBoardIdOrderByPositionAsc(boardId);
@@ -125,6 +168,8 @@ public class BoardService {
                 .id(board.getId())
                 .workspaceId(board.getWorkspace().getId())
                 .title(board.getTitle())
+                .description(board.getDescription())
+                .privacy(board.getPrivacy())
                 .position(board.getPosition())
                 .columns(columnResponses)
                 .createdAt(board.getCreatedAt())
@@ -170,6 +215,9 @@ public class BoardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
         
         board.setTitle(request.getTitle());
         if (request.getPosition() != null) {
@@ -192,9 +240,84 @@ public class BoardService {
         if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
             throw new BadRequestException("Not a member of this workspace");
         }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
         
         activityService.logActivity(board.getWorkspace(), user, "Deleted board", "Deleted board \"" + board.getTitle() + "\"");
         boardRepository.delete(board);
+    }
+
+    public List<UserResponse> getBoardMembers(Long boardId, String currentUserEmail) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+        User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
+        
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this workspace");
+        }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
+        
+        return boardMemberRepository.findByBoardId(boardId)
+                .stream()
+                .map(m -> UserResponse.builder()
+                        .id(m.getUser().getId())
+                        .name(m.getUser().getName())
+                        .email(m.getUser().getEmail())
+                        .avatarUrl(m.getUser().getAvatarUrl())
+                        .presenceStatus(m.getUser().getPresenceStatus())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void addBoardMember(Long boardId, Long userId, String currentUserEmail) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+        User currentUser = userRepository.findByEmail(currentUserEmail).orElseThrow();
+        
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), currentUser.getId())) {
+            throw new BadRequestException("Not a member of this workspace");
+        }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), currentUser.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
+        
+        User invitee = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), invitee.getId())) {
+            throw new BadRequestException("Invitee is not a member of this workspace");
+        }
+        
+        if (!boardMemberRepository.existsByBoardIdAndUserId(board.getId(), invitee.getId())) {
+            BoardMember boardMember = BoardMember.builder()
+                    .board(board)
+                    .user(invitee)
+                    .build();
+            boardMemberRepository.save(boardMember);
+            activityService.logActivity(board.getWorkspace(), currentUser, "Added board member", "Added " + invitee.getName() + " to board \"" + board.getTitle() + "\"");
+        }
+    }
+
+    @Transactional
+    public void removeBoardMember(Long boardId, Long userId, String currentUserEmail) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+        User currentUser = userRepository.findByEmail(currentUserEmail).orElseThrow();
+        
+        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), currentUser.getId())) {
+            throw new BadRequestException("Not a member of this workspace");
+        }
+        if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), currentUser.getId())) {
+            throw new BadRequestException("Not a member of this private board");
+        }
+        
+        BoardMember member = boardMemberRepository.findByBoardIdAndUserId(board.getId(), userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User is not a member of this board"));
+        boardMemberRepository.delete(member);
+        activityService.logActivity(board.getWorkspace(), currentUser, "Removed board member", "Removed " + member.getUser().getName() + " from board \"" + board.getTitle() + "\"");
     }
 
     private Double computeNextPosition(Long workspaceId) {
@@ -208,6 +331,8 @@ public class BoardService {
                 .id(board.getId())
                 .workspaceId(board.getWorkspace().getId())
                 .title(board.getTitle())
+                .description(board.getDescription())
+                .privacy(board.getPrivacy())
                 .position(board.getPosition())
                 .createdAt(board.getCreatedAt())
                 .updatedAt(board.getUpdatedAt())

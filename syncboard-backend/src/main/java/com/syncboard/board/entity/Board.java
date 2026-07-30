@@ -30,4 +30,12 @@ public class Board extends BaseEntity {
 
     @Column(nullable = false)
     private Double position;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private BoardPrivacy privacy = BoardPrivacy.WORKSPACE;
 }
