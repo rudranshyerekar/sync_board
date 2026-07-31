@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, AlertTriangle, ExternalLink } from 'lucide-react';
 import { workspaceApi } from '../../../api/workspaceApi';
 import { boardApi } from '../../../api/boardApi';
+import { cardApi } from '../../../api/cardApi';
 
 export const CalendarView = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -38,7 +39,7 @@ export const CalendarView = () => {
               } else {
                 const cols = await boardApi.getColumns(board.id);
                 for (const col of cols) {
-                  const cards = await boardApi.getCards(board.id, col.id);
+                  const cards = await cardApi.getCards(col.id);
                   for (const card of cards) {
                     if (card.deadline) {
                       items.push({

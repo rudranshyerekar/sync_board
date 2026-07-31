@@ -3,6 +3,7 @@ import { boardApi } from '../../../api/boardApi';
 import { cardApi } from '../../../api/cardApi';
 import { wsService } from '../../../api/websocketService';
 import { useNotificationStore } from '../../notifications/state/useNotificationStore';
+import { useAuthStore } from '../../auth/state/useAuthStore';
 
 export const useBoardStore = create((set, get) => ({
   board: null,
@@ -32,6 +33,7 @@ export const useBoardStore = create((set, get) => ({
       const data = typeof payload === 'string' ? { title: payload } : payload;
       await boardApi.createColumn(boardId, data);
       get().fetchBoard(boardId);
+      get().notifyBoardSync(boardId);
     } catch (err) {
       console.error("Failed to create column:", err);
       alert("Failed to create column.");
@@ -42,6 +44,7 @@ export const useBoardStore = create((set, get) => ({
     try {
       await boardApi.updateBoard(boardId, { title });
       get().fetchBoard(boardId);
+      get().notifyBoardSync(boardId);
     } catch (err) {
       console.error("Failed to update board:", err);
       alert("Failed to rename board.");
@@ -51,7 +54,11 @@ export const useBoardStore = create((set, get) => ({
   updateColumn: async (columnId, title) => {
     try {
       await boardApi.updateColumn(columnId, { title });
-      get().fetchBoard(get().board?.id);
+      const boardId = get().board?.id;
+      if (boardId) {
+        get().fetchBoard(boardId);
+        get().notifyBoardSync(boardId);
+      }
     } catch (err) {
       console.error("Failed to update column:", err);
       alert("Failed to rename column.");
@@ -61,7 +68,11 @@ export const useBoardStore = create((set, get) => ({
   deleteColumn: async (columnId) => {
     try {
       await boardApi.deleteColumn(columnId);
-      get().fetchBoard(get().board?.id);
+      const boardId = get().board?.id;
+      if (boardId) {
+        get().fetchBoard(boardId);
+        get().notifyBoardSync(boardId);
+      }
     } catch (err) {
       console.error("Failed to delete column:", err);
       alert("Failed to delete column.");
@@ -75,6 +86,7 @@ export const useBoardStore = create((set, get) => ({
       const boardId = get().board?.id;
       if (boardId) {
         get().fetchBoard(boardId);
+        get().notifyBoardSync(boardId);
       }
     } catch (err) {
       console.error("Failed to create card:", err);
@@ -88,6 +100,7 @@ export const useBoardStore = create((set, get) => ({
       const boardId = get().board?.id;
       if (boardId) {
         get().fetchBoard(boardId);
+        get().notifyBoardSync(boardId);
       }
     } catch (err) {
       console.error("Failed to update card:", err);
@@ -96,14 +109,21 @@ export const useBoardStore = create((set, get) => ({
       } else {
         alert("Failed to update card. Changes have been reverted.");
       }
-      get().fetchBoard(get().board?.id);
+      const boardId = get().board?.id;
+      if (boardId) {
+        get().fetchBoard(boardId);
+      }
     }
   },
 
   deleteCard: async (cardId) => {
     try {
       await cardApi.deleteCard(cardId);
-      get().fetchBoard(get().board?.id);
+      const boardId = get().board?.id;
+      if (boardId) {
+        get().fetchBoard(boardId);
+        get().notifyBoardSync(boardId);
+      }
     } catch (err) {
       console.error("Failed to delete card:", err);
       alert("Failed to delete card.");
@@ -130,11 +150,17 @@ export const useBoardStore = create((set, get) => ({
         }
       });
 
-      // 2. Subscribe to Board Events (Moves, Edits)
+      // 2. Subscribe to Board Events (Moves, Edits, Sync)
       wsService.subscribe(`/topic/board/${boardId}`, (message) => {
         const state = get();
         
         switch (message.type) {
+          case 'BOARD_SYNC':
+            if (message.payload?.senderId !== useAuthStore.getState().user?.id) {
+               get().fetchBoard(boardId);
+            }
+            break;
+
           case 'CARD_MOVED': {
             // An external user moved a card. We apply the same optimistic logic locally.
             const { cardId, sourceColId, targetColId, newIndex } = message.payload;
@@ -176,6 +202,12 @@ export const useBoardStore = create((set, get) => ({
   // Broadcast that LOCAL user stopped editing
   publishEditStop: (cardId) => {
     wsService.publish(`/app/board/${get().board?.id}/edit/stop`, { cardId });
+  },
+
+  // Broadcast a generic sync event
+  notifyBoardSync: (boardId) => {
+    const user = useAuthStore.getState().user;
+    wsService.publish(`/app/board/${boardId}/sync`, { senderId: user?.id });
   },
 
   // Optimistic update for dragging cards

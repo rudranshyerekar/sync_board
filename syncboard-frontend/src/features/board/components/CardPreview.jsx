@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDrag } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { MessageSquare, Calendar, CheckCircle2 } from 'lucide-react';
 import { ItemTypes } from '../dnd/ItemTypes';
 import { Avatar } from '../../../components/Avatar';
@@ -7,7 +7,7 @@ import { useBoardStore } from '../state/useBoardStore';
 import { useAuthStore } from '../../auth/state/useAuthStore';
 
 export const CardPreview = ({ card, columnId, index }) => {
-  const { setSelectedCard, editingCards, board } = useBoardStore();
+  const { setSelectedCard, editingCards, board, moveCardOptimistic, syncMoveCard } = useBoardStore();
   const currentUser = useAuthStore(state => state.user);
   const editingUser = editingCards[card.id];
   const isEditingByOther = editingUser && currentUser && editingUser.id !== currentUser.id;
@@ -20,6 +20,29 @@ export const CardPreview = ({ card, columnId, index }) => {
       isDragging: !!monitor.isDragging(),
     }),
   }));
+
+  const [{ isOver }, dropRef] = useDrop(() => ({
+    accept: ItemTypes.CARD,
+    drop: (item, monitor) => {
+      if (monitor.didDrop()) return;
+      
+      const targetColId = columnId;
+      const newIndex = index; // drop exactly at this card's current index
+      
+      if (item.sourceColId === targetColId && item.index === newIndex) return;
+      
+      moveCardOptimistic(item.id, item.sourceColId, targetColId, newIndex);
+      syncMoveCard(item.id, item.sourceColId, targetColId, newIndex);
+    },
+    collect: (monitor) => ({
+      isOver: !!monitor.isOver({ shallow: true }),
+    }),
+  }), [columnId, index, moveCardOptimistic, syncMoveCard]);
+
+  const setRefs = (node) => {
+    dragRef(node);
+    dropRef(node);
+  };
 
   // Define label colors based on the text
   const getLabelColors = (color) => {
@@ -44,11 +67,13 @@ export const CardPreview = ({ card, columnId, index }) => {
 
   return (
     <div
-      ref={dragRef}
+      ref={setRefs}
       onClick={() => setSelectedCard(card.id)}
-      className={`relative bg-white p-4 rounded-xl shadow-sm border border-border cursor-grab active:cursor-grabbing hover:border-gray-300 transition-all ${
+      className={`relative bg-white p-4 rounded-xl shadow-sm border cursor-grab active:cursor-grabbing transition-all ${
         isDragging ? 'opacity-50' : 'opacity-100'
-      } ${isEditingByOther ? 'ring-2 ring-blue-400/50' : ''}`}
+      } ${isEditingByOther ? 'ring-2 ring-blue-400/50' : ''} ${
+        isOver ? 'border-t-4 border-t-indigo-500 border-x-border border-b-border' : 'border-border hover:border-gray-300'
+      }`}
     >
       {/* Editing Indicator Badge */}
       {isEditingByOther && (

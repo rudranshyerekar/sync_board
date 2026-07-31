@@ -34,4 +34,8 @@ public class BoardColumn extends BaseEntity {
 
     @Column(length = 1000)
     private String description;
+
+    @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<com.syncboard.card.entity.Card> cards = new java.util.ArrayList<>();
 }

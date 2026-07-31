@@ -11,6 +11,7 @@ import com.syncboard.activity.service.ActivityService;
 import com.syncboard.board.entity.BoardPrivacy;
 import com.syncboard.board.entity.BoardMember;
 import com.syncboard.board.repository.BoardMemberRepository;
+import com.syncboard.common.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -237,8 +238,11 @@ public class BoardService {
             
         User user = userRepository.findByEmail(currentUserEmail).orElseThrow();
         // Typically only Admin/Owner can delete, enforcing member for now
-        if (!workspaceMemberRepository.existsByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())) {
-            throw new BadRequestException("Not a member of this workspace");
+        com.syncboard.workspace.entity.WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndUserId(board.getWorkspace().getId(), user.getId())
+            .orElseThrow(() -> new BadRequestException("Not a member of this workspace"));
+
+        if (member.getRole() != Role.OWNER && member.getRole() != Role.ADMIN) {
+             throw new BadRequestException("Only Admin or Owner can delete boards");
         }
         if (board.getPrivacy() == BoardPrivacy.PRIVATE && !boardMemberRepository.existsByBoardIdAndUserId(board.getId(), user.getId())) {
             throw new BadRequestException("Not a member of this private board");

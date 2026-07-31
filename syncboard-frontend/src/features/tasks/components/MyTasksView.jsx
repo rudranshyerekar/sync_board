@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CheckSquare, Clock, AlertCircle, Filter, Search, Calendar as CalendarIcon, ExternalLink } from 'lucide-react';
 import { workspaceApi } from '../../../api/workspaceApi';
 import { boardApi } from '../../../api/boardApi';
+import { cardApi } from '../../../api/cardApi';
 import { useAuthStore } from '../../auth/state/useAuthStore';
 import { Avatar } from '../../../components/Avatar';
 
@@ -10,7 +11,7 @@ export const MyTasksView = () => {
   const { user } = useAuthStore();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL'); // ALL, HIGH, DUE_SOON
+  const [filter, setFilter] = useState('MY_TASKS'); // MY_TASKS, ALL, HIGH, DUE_SOON
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export const MyTasksView = () => {
                 // Fallback to fetching columns and cards sequentially
                 const columns = await boardApi.getColumns(board.id);
                 for (const col of columns) {
-                  const cards = await boardApi.getCards(board.id, col.id);
+                  const cards = await cardApi.getCards(col.id);
                   for (const card of cards) {
                     allTasks.push({
                       ...card,
@@ -85,6 +86,7 @@ export const MyTasksView = () => {
                           (t.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
 
+    if (filter === 'MY_TASKS') return t.assignee?.id === user?.id;
     if (filter === 'HIGH') return t.priority === 'HIGH' || t.priority === 'URGENT';
     if (filter === 'DUE_SOON') {
       if (!t.deadline) return false;
@@ -141,6 +143,14 @@ export const MyTasksView = () => {
         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
           <Filter className="w-3.5 h-3.5" /> Filter Tasks:
         </span>
+        <button
+          onClick={() => setFilter('MY_TASKS')}
+          className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${
+            filter === 'MY_TASKS' ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          Assigned to Me
+        </button>
         <button
           onClick={() => setFilter('ALL')}
           className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${

@@ -70,16 +70,20 @@ public class WorkspaceService {
         return mapToResponse(workspace);
     }
 
-    public List<com.syncboard.user.dto.UserResponse> getMembers(Long workspaceId, String currentUserEmail) {
+    public List<com.syncboard.workspace.dto.WorkspaceMemberResponse> getMembers(Long workspaceId, String currentUserEmail) {
         Workspace workspace = getWorkspaceIfMember(workspaceId, currentUserEmail);
         return workspaceMemberRepository.findByWorkspaceId(workspace.getId())
                 .stream()
-                .map(m -> com.syncboard.user.dto.UserResponse.builder()
-                        .id(m.getUser().getId())
-                        .name(m.getUser().getName())
-                        .email(m.getUser().getEmail())
-                        .avatarUrl(m.getUser().getAvatarUrl())
-                        .presenceStatus(m.getUser().getPresenceStatus())
+                .map(m -> com.syncboard.workspace.dto.WorkspaceMemberResponse.builder()
+                        .id(m.getUser().getId()) // Use userId as the id for frontend compatibility
+                        .role(m.getRole())
+                        .user(com.syncboard.user.dto.UserResponse.builder()
+                                .id(m.getUser().getId())
+                                .name(m.getUser().getName())
+                                .email(m.getUser().getEmail())
+                                .avatarUrl(m.getUser().getAvatarUrl())
+                                .presenceStatus(m.getUser().getPresenceStatus())
+                                .build())
                         .build())
                 .collect(Collectors.toList());
     }

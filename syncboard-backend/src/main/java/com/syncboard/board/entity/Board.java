@@ -38,4 +38,12 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private BoardPrivacy privacy = BoardPrivacy.WORKSPACE;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<BoardColumn> columns = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<BoardMember> members = new java.util.ArrayList<>();
 }

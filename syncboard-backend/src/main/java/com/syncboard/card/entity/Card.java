@@ -54,4 +54,8 @@ public class Card extends BaseEntity {
 
     @org.hibernate.annotations.Formula("(SELECT COUNT(*) FROM comment c WHERE c.card_id = id)")
     private Integer commentCount;
+
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<com.syncboard.comment.entity.Comment> comments = new java.util.ArrayList<>();
 }

@@ -32,4 +32,8 @@ public class Workspace extends BaseEntity {
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<WorkspaceMember> members = new HashSet<>();
+
+    @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<com.syncboard.board.entity.Board> boards = new java.util.ArrayList<>();
 }

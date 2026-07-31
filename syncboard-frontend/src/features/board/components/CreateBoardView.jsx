@@ -57,7 +57,7 @@ const CreateBoardView = () => {
   useEffect(() => {
     if (selectedWorkspaceId) {
       workspaceApi.getMembers(selectedWorkspaceId)
-        .then(members => setWorkspaceMembers(members))
+        .then(members => setWorkspaceMembers(members.map(m => m.user)))
         .catch(console.error);
     }
   }, [selectedWorkspaceId]);
@@ -96,7 +96,7 @@ const CreateBoardView = () => {
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
 
       {/* Top Header */}
-      <header className="h-16 border-b border-border bg-white flex items-center justify-between px-8 flex-shrink-0">
+      <header className="h-16 border-b border-border bg-white flex items-center justify-between px-8 flex-shrink-0 z-50 relative">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500">Boards</span>
           <span className="text-gray-400">/</span>

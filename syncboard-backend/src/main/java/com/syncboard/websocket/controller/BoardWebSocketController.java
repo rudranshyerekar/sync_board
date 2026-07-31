@@ -71,6 +71,16 @@ public class BoardWebSocketController {
         messagingTemplate.convertAndSend("/topic/board/" + boardId, message);
     }
 
+    @MessageMapping("/board/{boardId}/sync")
+    public void handleBoardSync(@DestinationVariable Long boardId, @Payload Map<String, Object> payload) {
+        // Relays a generic BOARD_SYNC event so other clients know to re-fetch the board
+        BroadcastMessage message = new BroadcastMessage();
+        message.setType("BOARD_SYNC");
+        message.setPayload(payload);
+        
+        messagingTemplate.convertAndSend("/topic/board/" + boardId, message);
+    }
+
     @Data
     public static class BroadcastMessage {
         private String type;
