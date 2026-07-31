@@ -115,6 +115,12 @@ SyncBoard is a **real-time collaborative Kanban board** built with Spring Boot (
 - **Feature: Column Color Customization**:
   - Upgraded `CreateBoardView.jsx` to support defining initial columns as objects (`{ title, color }`) instead of raw strings.
   - Built an inline component for adding new columns with a built-in 8-swatch color picker, mapping natively to the backend `InitialColumnRequest`.
+- **UI/UX Polishing & Real-Time Bug Fixes**:
+  - **Assignee Dropdown:** Fixed member names displaying as blank in `CreateCardModal` and `CardDrawer` by mapping `WorkspaceMemberResponse` to the flat `User` object format expected by the frontend.
+  - **Real-Time Board Sync:** Resolved an issue where creating a new card didn't appear for other invited members without a hard refresh. Added a generic `/app/board/{boardId}/sync` WebSocket endpoint and updated `useBoardStore` to broadcast `BOARD_SYNC` on structural changes (triggering a background fetch for other clients).
+  - **Vertical Card Reordering:** Upgraded `CardPreview.jsx` with a `useDrop` hook to support dragging and dropping cards up and down within the same column natively.
+  - **Notification Panel Z-Index:** Fixed a CSS stacking context issue where the notification panel clipped behind the board canvas by elevating the top header to `z-50 relative`.
+  - **My Tasks View Filtering:** Upgraded `MyTasksView.jsx` with an `"Assigned to Me"` filter, making it the default view to properly isolate the logged-in user's tasks.
 
 ### 2026-07-25
 - **Phase 5 Comments + Notifications — Full Implementation:**

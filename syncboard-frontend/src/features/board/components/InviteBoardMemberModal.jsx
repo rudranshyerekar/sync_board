@@ -15,7 +15,7 @@ export const InviteBoardMemberModal = ({ isOpen, onClose, boardId, workspaceId }
     setLoading(true);
     try {
       const [wsMembers, bMembers] = await Promise.all([
-        workspaceApi.getMembers(workspaceId),
+        workspaceApi.getMembers(workspaceId).then(res => res.map(m => m.user)),
         boardApi.getMembers(boardId)
       ]);
       setWorkspaceMembers(wsMembers);

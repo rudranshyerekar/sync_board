@@ -48,7 +48,7 @@ const DashboardView = () => {
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
       
       {/* Header */}
-      <header className="h-16 border-b border-border bg-white flex items-center justify-between px-8 flex-shrink-0">
+      <header className="h-16 border-b border-border bg-white flex items-center justify-between px-8 flex-shrink-0 z-50 relative">
         <h1 className="text-xl font-bold text-gray-900">Boards</h1>
         
         <div className="flex items-center gap-4">

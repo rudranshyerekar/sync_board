@@ -10,6 +10,7 @@ export const SettingsView = () => {
   const { user } = useAuthStore();
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  const [workspaceMembers, setWorkspaceMembers] = useState([]);
   const [activeTab, setActiveTab] = useState('MEMBERS'); // MEMBERS, GENERAL, NOTIFICATIONS
   const [loading, setLoading] = useState(true);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -34,9 +35,25 @@ export const SettingsView = () => {
     fetchWorkspaces();
   }, []);
 
+  useEffect(() => {
+    if (selectedWorkspace) {
+      const fetchMembers = async () => {
+        try {
+          const members = await workspaceApi.getMembers(selectedWorkspace.id);
+          setWorkspaceMembers(members);
+        } catch (err) {
+          console.error("Failed to load members:", err);
+        }
+      };
+      fetchMembers();
+    } else {
+      setWorkspaceMembers([]);
+    }
+  }, [selectedWorkspace]);
+
   const handleRoleChange = async (memberId, newRole) => {
     try {
-      await workspaceApi.updateMemberRole(selectedWorkspace.id, memberId, newRole);
+      await workspaceApi.updateRole(selectedWorkspace.id, memberId, { role: newRole });
       setSaveStatus('Role updated successfully');
       setTimeout(() => setSaveStatus(null), 3000);
       fetchWorkspaces();
@@ -98,7 +115,7 @@ export const SettingsView = () => {
             : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
         >
-          <Users className="w-4 h-4" /> Workspace Members ({selectedWorkspace?.members?.length || 1})
+          <Users className="w-4 h-4" /> Workspace Members ({workspaceMembers.length || 0})
         </button>
         <button
           onClick={() => setActiveTab('GENERAL')}
@@ -140,8 +157,8 @@ export const SettingsView = () => {
             </div>
 
             <div className="bg-white rounded-xl border border-border shadow-sm divide-y divide-border">
-              {selectedWorkspace?.members?.length ? (
-                selectedWorkspace.members.map((member) => (
+              {workspaceMembers.length ? (
+                workspaceMembers.map((member) => (
                   <div key={member.id} className="p-5 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
                     <div className="flex items-center gap-4">
                       <Avatar user={member.user} size="lg" />

@@ -22,7 +22,7 @@ public class WorkspaceController {
     private final WorkspaceService workspaceService;
 
     @GetMapping("/{id}/members")
-    public ResponseEntity<List<com.syncboard.user.dto.UserResponse>> getMembers(
+    public ResponseEntity<List<com.syncboard.workspace.dto.WorkspaceMemberResponse>> getMembers(
             @PathVariable Long id,
             Authentication authentication) {
         return ResponseEntity.ok(workspaceService.getMembers(id, authentication.getName()));

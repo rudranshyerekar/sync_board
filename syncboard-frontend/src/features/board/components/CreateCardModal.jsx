@@ -18,7 +18,7 @@ export const CreateCardModal = ({ isOpen, onClose, column }) => {
 
   useEffect(() => {
     if (board?.workspaceId) {
-      workspaceApi.getMembers(board.workspaceId).then(setMembers).catch(console.error);
+      workspaceApi.getMembers(board.workspaceId).then(res => setMembers(res.map(m => m.user))).catch(console.error);
     }
   }, [board?.workspaceId]);
 

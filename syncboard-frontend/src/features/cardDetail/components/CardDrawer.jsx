@@ -144,7 +144,7 @@ export const CardDrawer = () => {
   useEffect(() => {
     const workspaceId = board?.workspaceId;
     if (!workspaceId) return;
-    workspaceApi.getMembers(workspaceId).then(setMembers).catch(console.error);
+    workspaceApi.getMembers(workspaceId).then(res => setMembers(res.map(m => m.user))).catch(console.error);
   }, [board?.workspaceId]);
 
   // Soft-lock broadcast

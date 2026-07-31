@@ -72,7 +72,7 @@ const BoardView = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-gray-50">
 
         {/* Top Header */}
-        <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-6 flex-shrink-0 z-10">
+        <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-6 flex-shrink-0 z-50 relative">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-gray-500">Boards</span>
             <span className="text-gray-400">/</span>
