@@ -20,4 +20,11 @@ public class UserController {
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
         return ResponseEntity.ok(userService.getCurrentUser(authentication.getName()));
     }
+
+    @org.springframework.web.bind.annotation.PutMapping("/me")
+    public ResponseEntity<UserResponse> updateCurrentUser(
+            Authentication authentication,
+            @org.springframework.web.bind.annotation.RequestBody com.syncboard.user.dto.UserUpdateRequest request) {
+        return ResponseEntity.ok(userService.updateUserProfile(authentication.getName(), request));
+    }
 }

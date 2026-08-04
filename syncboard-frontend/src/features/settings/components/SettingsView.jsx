@@ -207,19 +207,30 @@ export const SettingsView = () => {
             </div>
           </div>
         ) : activeTab === 'GENERAL' ? (
-          <div className="bg-white rounded-xl border border-border shadow-sm p-6 space-y-6">
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+              await useAuthStore.getState().updateProfile({ name: formData.get('name') });
+              setSaveStatus('Profile updated successfully');
+              setTimeout(() => setSaveStatus(null), 3000);
+            } catch (err) {
+              alert(err.response?.data?.message || 'Failed to update profile');
+            }
+          }} className="bg-white rounded-xl border border-border shadow-sm p-6 space-y-6">
             <div>
               <h3 className="text-base font-bold text-gray-900">Personal Account Profile</h3>
-              <p className="text-xs text-gray-500">Your profile credentials authenticated via JWT bearer protocol.</p>
+              <p className="text-xs text-gray-500">Update your generic details below.</p>
             </div>
             <div className="grid grid-cols-2 gap-6 max-w-xl">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Display Name</label>
                 <input
                   type="text"
-                  disabled
-                  value={user?.name || 'SyncBoard User'}
-                  className="w-full px-4 py-2 bg-gray-50 border border-border rounded-lg text-sm text-gray-600"
+                  name="name"
+                  defaultValue={user?.name || ''}
+                  required
+                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
@@ -228,14 +239,18 @@ export const SettingsView = () => {
                   type="email"
                   disabled
                   value={user?.email || ''}
-                  className="w-full px-4 py-2 bg-gray-50 border border-border rounded-lg text-sm text-gray-600"
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500"
                 />
+                <p className="text-[10px] text-gray-400 mt-1">Email cannot be changed currently.</p>
               </div>
             </div>
-            <div className="pt-4 border-t border-border">
-              <span className="text-xs font-semibold text-gray-400">Account status: Active · Token verification passed</span>
+            <div className="pt-4 border-t border-border flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-400">Account status: Active</span>
+              <Button type="submit" variant="primary" className="text-sm px-4 py-2">
+                Save Changes
+              </Button>
             </div>
-          </div>
+          </form>
         ) : null}
       </main>
       {/* Invite Member Modal binding */}
