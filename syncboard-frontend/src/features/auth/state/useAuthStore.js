@@ -57,5 +57,16 @@ export const useAuthStore = create((set) => ({
     } else {
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
+  },
+
+  updateProfile: async (profileData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const userData = await authApi.updateProfile(profileData);
+      set({ user: userData, isLoading: false });
+    } catch (error) {
+      set({ error: error.response?.data?.message || 'Profile update failed', isLoading: false });
+      throw error;
+    }
   }
 }));

@@ -25,4 +25,26 @@ public class UserService {
                 .presenceStatus(user.getPresenceStatus())
                 .build();
     }
+
+    public UserResponse updateUserProfile(String email, com.syncboard.user.dto.UserUpdateRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+                
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            user.setName(request.getName().trim());
+        }
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+        
+        userRepository.save(user);
+        
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .avatarUrl(user.getAvatarUrl())
+                .presenceStatus(user.getPresenceStatus())
+                .build();
+    }
 }

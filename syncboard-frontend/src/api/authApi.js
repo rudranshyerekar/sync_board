@@ -25,5 +25,10 @@ export const authApi = {
   getCurrentUser: async () => {
     const response = await httpClient.get('/users/me');
     return response.data;
+  },
+
+  updateProfile: async (profileData) => {
+    const response = await httpClient.put('/users/me', profileData);
+    return response.data;
   }
 };
